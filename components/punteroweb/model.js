@@ -3,6 +3,7 @@ const db = require('../../db').getdb()
 const puntero = "\
 CREATE TABLE if not exists puntero (\
     id integer not null primary key autoincrement,\
+    urlid text not null,\
     url text unique not null collate nocase,\
     title text,\
     description text,\

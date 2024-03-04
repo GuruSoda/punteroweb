@@ -1,5 +1,6 @@
 const store = require('./store')
 const utilsweb = require('./utilsweb')
+const nanoid = require('nanoid').customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
 
 function addURL(dataPuntero) {
     return new Promise((resolve, reject) => {
@@ -13,6 +14,8 @@ function addURL(dataPuntero) {
         const urltest = new URL(dataPuntero.url)
 
         if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
+
+        dataPuntero.urlid = nanoid()
 
         store.add(dataPuntero)
             .then(message => resolve(message))
