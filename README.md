@@ -7,3 +7,6 @@ https://dvmhn07.medium.com/jwt-authentication-in-node-js-a-practical-guide-c8ab1
 
 # Basado en el curso de Carlos Hernandez ( CodingCarlos )
 https://github.com/CodingCarlos/proyecto-backend-node-platzi
+
+# Ejemplo de archivo de configuracion
+https://www.toptal.com/json/jwt-nodejs-security
