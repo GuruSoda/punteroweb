@@ -1,6 +1,7 @@
+const config = require('../../config')
 const store = require('./store')
 const utilsweb = require('./utilsweb')
-const nanoid = require('nanoid').customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz')
+const nanoid = require('nanoid').customAlphabet(config.model.alphabetIDURL, config.model.lengthIDURL)
 
 function addURL(dataPuntero) {
     return new Promise((resolve, reject) => {

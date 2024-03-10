@@ -19,6 +19,16 @@ router.post('/login', function(req, res) {
         })
 })
 
+router.post('/logout', function(req, res) {
+    controller.logout()
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(e => {
+            response.error(req, res, e, 500, e)
+        })
+})
+
 router.post('/register', function(req, res) {
     dataUser = {}
 
@@ -30,7 +40,7 @@ router.post('/register', function(req, res) {
 
     controller.register(dataUser)
         .then((message) => {
-            response.success(req, res, message, 200)
+            response.success(req, res, message, 201)
         })
         .catch(e => {
             response.error(req, res, e, 500, e)

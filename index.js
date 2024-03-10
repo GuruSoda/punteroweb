@@ -1,9 +1,10 @@
 const app = require('./app')
 const http = require('http')
+const config = require('./config')
 
 const server = http.createServer(app)
 
-server.listen(process.env.PORT || 3000);
+server.listen(config.app.port || 3000)
 
 server.on('error', onError);
 server.on('listening', onListening);

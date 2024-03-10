@@ -1,5 +1,28 @@
 const dotenv = require('dotenv')
+dotenv.config()
 
+const config = {
+    app: {
+        port: process.env.PORT || 3000,
+    },
+    jwt: {
+        secret: process.env.SECRETJWT || 'sssssh-silencio',
+    },
+    database: {
+        filedb: process.env.FILEDB  || ':memory:',
+    },
+    model: {
+        alphabetIDUser: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        alphabetIDURL: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        lengthIDUser: 21,
+        lengthIDURL: 30
+    }
+}
+
+module.exports = config
+
+// en desuso
+/*
 function loadConfig() {
     dotenv.config()
 
@@ -23,5 +46,4 @@ const singletonConfig = (function () {
         }
     }
 })()
-
-module.exports = singletonConfig.getInstance()
+*/
