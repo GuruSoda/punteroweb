@@ -130,4 +130,5 @@ dist
 .pnp.*
 
 # database for app
-!database/*
+database/*
+!database/empty.txt
