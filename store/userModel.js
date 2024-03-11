@@ -2,7 +2,7 @@ const db = require('../db').getdb()
 
 const puntero = "\
 CREATE TABLE if not exists user (\
-    userid text unique not null collate nocase,\
+    userid text unique primary key collate nocase,\
     username text unique not null collate nocase,\
     email text unique not null collate nocase,\
     name text,\
@@ -11,12 +11,12 @@ CREATE TABLE if not exists user (\
     FOREIGN KEY (userid) REFERENCES password (userid) on delete cascade\
 );\
 CREATE TABLE if not exists password (\
-    userid text unique not null collate nocase,\
+    userid text unique primary key collate nocase,\
     password text not null collate nocase,\
     unique(userid, password)\
 );\
 CREATE TABLE if not exists role (\
-    id integer not null primary key autoincrement,\
+    id integer primary key autoincrement,\
     name text unique not null collate nocase,\
     description text\
 );\

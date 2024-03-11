@@ -3,15 +3,17 @@ const userModel = require('./userModel')
 const stmtAddUser = userModel.prepare('insert into user(userid, username, email, name, lastname) values(?, ?, ?, ?, ?)')
 const stmtAddPassword = userModel.prepare('insert into password(userid, password) values(?, ?)')
 const stmtDeletePassword = userModel.prepare('delete from password where userid = ?')
+const stmtGetUserPassword = userModel.prepare('select password from password where userid = ?')
 const stmtDeleteUser = userModel.prepare('delete from user where userid = ?')
 const stmtEmailtoUserID = userModel.prepare('select userid from user where email = ?')
 const stmtUserIDtoEmail = userModel.prepare('select email from user where userid = ?')
 const stmtListEmail = userModel.prepare('select email from user')
-const stmtGetUser = userModel.prepare('select userid, username, name, lastname, email from user where email = ?')
+const stmtGetUser = userModel.prepare('select userid, username, name, lastname, email, createdat from user where userid = ?')
 const stmtGetFullUser = userModel.prepare('select u.userid, username, name, lastname, email, password from user u,password p where u.userid==p.userid and u.email = ?')
 const stmtAllUsers = userModel.prepare('select userid, username, name, lastname, email from user')
 //
 const stmtAddRole = userModel.prepare('insert into role (name) values(?)')
+const stmtDeleteRoleUser = userModel.prepare('delete from user_role where userid = ?')
 const stmtGetRole = userModel.prepare('select id, name, description from role where name = ?')
 const stmtGetRoles = userModel.prepare('select id, name, description from role')
 const stmtAddUserRole = userModel.prepare('insert or ignore into user_role (userid, roleid) values (?, ?)')
@@ -20,11 +22,20 @@ const stmtGetRolesUser = userModel.prepare('select r.id, r.name, r.description f
 function addUser (dataUser) {
     return new Promise(async (resolve, reject) => {
         try {
+            const userid = await getUserIDfromEmail(dataUser.email)
+            if (userid) return reject('Email exists')
+        } catch (error) {
+            return reject({code: error.code, message: error.message})
+        }
+
+        try {
             const outAddPassword = stmtAddPassword.run(dataUser.userid, dataUser.password)
             const outUser = stmtAddUser.run(dataUser.userid, dataUser.username, dataUser.email, dataUser.name, dataUser.lastname)
         } catch(error) {
             const outDeletePassword = stmtDeletePassword.run(dataUser.userid)
-            reject({code: error.code, message: error.message})
+            const outDeleteUser = stmtDeleteUser.run(dataUser.userid)
+            const outDeleteRoleUser = stmtDeleteRoleUser.run(dataUser.userid)            
+            return reject({code: error.code, message: error.message})
         }
 
         resolve({
@@ -38,8 +49,16 @@ function addUser (dataUser) {
     })
 }
 
-function deleteUser () {
-
+function deleteUser (userid) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const out = stmtDeleteUser.run(userid)
+            if (out.changes === 1) resolve('User Deleted')
+            else resolve('User not deleted o not found')
+        } catch (error) {
+            reject({code: error.code, message: error.message})
+        }
+    })
 }
 
 function modifyUser() {
@@ -53,10 +72,10 @@ function listUsers() {
             out = stmtListEmail.all()
 
             let usuarios = []
-            out.forEach( async user => {
-                usuarios.push(await getUser(user.email))
-            })            
-            
+            for (const item of out){
+                const userid = await getUserIDfromEmail(item.email)
+                usuarios.push(await getUser(userid))
+            }            
             resolve(usuarios)
         } catch (error) {
             reject({code: error.code, message: error.message})
@@ -64,11 +83,11 @@ function listUsers() {
     })
 }
 
-function getUser(email) {
+function getUser(userid) {
     return new Promise(async (resolve, reject) => {
         try {
-            let user = stmtGetUser.get(email)
-            if (user) user.roles = await getRolesUser(email)
+            let user = stmtGetUser.get(userid)
+            if (user) user.roles = await getRolesUser(user.email)
             resolve(user)
         } catch (error) {
             reject({code: error.code, message: error.message})
@@ -76,23 +95,24 @@ function getUser(email) {
     })
 }
 
-function getFullUser(email) {
+function getUserPassword(userid) {
     return new Promise(async (resolve, reject) => {
         try {
-            let user = stmtGetFullUser.get(email)
-            user.roles = await getRolesUser(email)
-            resolve(user)
+            let pass = stmtGetUserPassword.get(userid)
+            if (pass.password) resolve(pass.password)
+            else resolve('')
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
     })
 }
 
-function getIDfromEmail(email) {    
+function getUserIDfromEmail(email) {
     return new Promise((resolve, reject) => {
         try {
-            const user = stmtEmailtoUserID.get(email)
-            resolve(user.userid)
+            const datauser = stmtEmailtoUserID.get(email)
+            if (datauser.userid) resolve(datauser.userid)
+            else resolve('')
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
@@ -124,7 +144,7 @@ function newRole(name) {
 function addRoleToUser(email, role) {
     return new Promise(async (resolve, reject) => {
         try {
-            const userid = await getIDfromEmail(email)
+            const userid = await getUserIDfromEmail(email)
             const dataRole = await getRole(role)
             const output = stmtAddUserRole.run(userid, dataRole.id)
 
@@ -183,13 +203,13 @@ function getRolesUser(email) {
 
 module.exports = {
     add: addUser,
-    del: deleteUser,
+    deleteUser: deleteUser,
     modify: modifyUser,
     list: listUsers,
-    get: getUser,
-    getAll: getFullUser,
-    getID: getIDfromEmail,
-    getEmail: getEmailfromID,
+    getUser: getUser,
+    getUserID: getUserIDfromEmail,
+    getUserEmail: getEmailfromID,
+    getUserPassword: getUserPassword,
     addRole: newRole,
     addRoleToUser: addRoleToUser,
     getRole: getRole,

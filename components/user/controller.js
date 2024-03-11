@@ -8,6 +8,15 @@ function getAllUsers() {
     })
 }
 
+function deleteUser(userid) {
+    return new Promise(async (resolve, reject) => {
+        store.deleteUser(userid)
+            .then(message => resolve(message))
+            .catch(message => reject(message))
+    })
+}
+
 module.exports = {
-    getall: getAllUsers
+    getall: getAllUsers,
+    deleteUser: deleteUser
 }

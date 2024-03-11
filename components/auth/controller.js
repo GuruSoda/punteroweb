@@ -13,20 +13,23 @@ function login(dataLogin) {
 
         let  dataUser = {}
         try {
-            dataUser = await store.getAll(dataLogin.email)
-            console.log(dataUser)
+            dataUser.userid = await store.getUserID(dataLogin.email)
+            dataUser.password = await store.getUserPassword(dataUser.userid)
         } catch (e) {
-            reject('No autorizado')
+            return reject('No autorizado')
         }
 
         try {
+            
             const result = await bcrypt.compare(dataLogin.password, dataUser.password)
 
             if (result) {
-                resolve(auth.sign({userid: dataUser.userid, roles: dataUser.roles}))
+                delete dataUser.password
+                dataUser = await store.getUser(dataUser.userid)
+                dataUser.token = auth.sign({userid: dataUser.userid, roles: dataUser.roles})
+                resolve(dataUser)
             } else {
                 reject('User or Pass incorrect.')
-                // throw new Error('Informacion invalida');
             }
         } catch (e) {
             reject(e)
@@ -69,7 +72,7 @@ async function init() {
         if (!role) await store.addRole('user')
         
         // Agrego usuario por default
-        let admin = await store.get('admin@localhost')
+        let admin = await store.getUser('admin@localhost')
         if (!admin) {
             const nuevo = await newUser({
                 email: "admin@localhost",
