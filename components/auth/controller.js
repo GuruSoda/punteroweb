@@ -46,9 +46,9 @@ function newUser(dataUser) {
         dataUser.password = await bcrypt.hash(dataUser.password, 5)
 
         try {
-            await store.add(dataUser)
-            await store.addRoleToUser(dataUser.email, 'user')
-            resolve('User Added')
+            const user = await store.add(dataUser)
+            await store.addRoleToUser('user', user.userid)
+            resolve(user)
         } catch (error) {
             if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') reject('Usuario existente')
             reject(error)
@@ -66,27 +66,28 @@ async function init() {
     try {
         // Agrego Roles por default
         let role = await store.getRole('admin')
-        if (!role) await store.addRole('admin')
+        if (!role) await store.addRole({name: 'admin', description: 'Role for Administration'})
         
         role = await store.getRole('user')
-        if (!role) await store.addRole('user')
+        if (!role) await store.addRole({name: 'user', description: 'Role for basic usage'})
         
-        // Agrego usuario por default
-        let admin = await store.getUser('admin@localhost')
-        if (!admin) {
-            const nuevo = await newUser({
+        // Agrego usuario por default si no existe
+        let admin = {}
+        let userid = await store.getUserID('admin@localhost')
+        if (!userid) {
+            admin = await newUser({
                 email: "admin@localhost",
                 password: "admin",
                 username: "admin",
                 name: "Admin",
                 lastname: "User"
             })
-        }
 
-        // Le asigno al usuario admin que sea administrador
-        await store.addRoleToUser('admin@localhost', 'admin')
+            // Le asigno al usuario admin que sea administrador
+            await store.addRoleToUser('admin', admin.userid)
+        }
     } catch (e) {
-        console.log(e)
+        console.log('Error on init:', e)
     }
 }
 

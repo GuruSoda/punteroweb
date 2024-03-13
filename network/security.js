@@ -10,7 +10,7 @@ function checkAuth(action) {
                         next()
                         break
                     } else {
-                        throw error('not authorized', 401, 'NO es administrador')                            
+                        throw error('not authorized', 401, "userid " + req.headers.tokenDecoded.userid + ' NO es administrador')
                     }
                 }
                 throw error('not authorized', 401, 'No tiene el header authorization o tokenDecoded')

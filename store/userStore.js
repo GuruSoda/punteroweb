@@ -5,15 +5,15 @@ const stmtAddPassword = userModel.prepare('insert into password(userid, password
 const stmtDeletePassword = userModel.prepare('delete from password where userid = ?')
 const stmtGetUserPassword = userModel.prepare('select password from password where userid = ?')
 const stmtDeleteUser = userModel.prepare('delete from user where userid = ?')
+const stmtUpdateUser = userModel.prepare('update user set username=?, name=?, lastname=?, email=? where userid=?')
 const stmtEmailtoUserID = userModel.prepare('select userid from user where email = ?')
 const stmtUserIDtoEmail = userModel.prepare('select email from user where userid = ?')
 const stmtListEmail = userModel.prepare('select email from user')
 const stmtGetUser = userModel.prepare('select userid, username, name, lastname, email, createdat from user where userid = ?')
-const stmtGetFullUser = userModel.prepare('select u.userid, username, name, lastname, email, password from user u,password p where u.userid==p.userid and u.email = ?')
-const stmtAllUsers = userModel.prepare('select userid, username, name, lastname, email from user')
 //
-const stmtAddRole = userModel.prepare('insert into role (name) values(?)')
-const stmtDeleteRoleUser = userModel.prepare('delete from user_role where userid = ?')
+const stmtAddRole = userModel.prepare('insert into role (name, description) values(?, ?)')
+const stmtDeleteRoleUser = userModel.prepare('delete from user_role where userid = ? and roleid = ?')
+const stmtDeleteRolesUser = userModel.prepare('delete from user_role where userid = ?')
 const stmtGetRole = userModel.prepare('select id, name, description from role where name = ?')
 const stmtGetRoles = userModel.prepare('select id, name, description from role')
 const stmtAddUserRole = userModel.prepare('insert or ignore into user_role (userid, roleid) values (?, ?)')
@@ -40,7 +40,6 @@ function addUser (dataUser) {
 
         resolve({
             userid: dataUser.userid,
-            password: dataUser.password,
             username: dataUser.username,
             email: dataUser.email,
             name: dataUser.name,
@@ -52,17 +51,31 @@ function addUser (dataUser) {
 function deleteUser (userid) {
     return new Promise(async (resolve, reject) => {
         try {
-            const out = stmtDeleteUser.run(userid)
-            if (out.changes === 1) resolve('User Deleted')
-            else resolve('User not deleted o not found')
+            const user = await getUser(userid)
+            if (!user.userid) reject('User not found')
+
+            // borro el usuario
+            stmtDeleteUser.run(user.userid)
+            // borro los roles asociados al usuario
+            stmtDeleteRoleUser.run(user.userid)
+
+            resolve('User Deleted')
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
     })
 }
 
-function modifyUser() {
-
+function updateUser(dataUser) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = stmtUpdateUser.run(dataUser.username, dataUser.name, dataUser.lastname, dataUser.email, dataUser.userid)
+            user = await getUser(dataUser.userid)
+            resolve(user)
+        } catch (error) {
+            reject({code: error.code, message: error.message})
+        }
+    })
 }
 
 function listUsers() {
@@ -99,8 +112,8 @@ function getUserPassword(userid) {
     return new Promise(async (resolve, reject) => {
         try {
             let pass = stmtGetUserPassword.get(userid)
-            if (pass.password) resolve(pass.password)
-            else resolve('')
+            if (pass && pass.password) resolve(pass.password)
+            else resolve(undefined)
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
@@ -110,9 +123,9 @@ function getUserPassword(userid) {
 function getUserIDfromEmail(email) {
     return new Promise((resolve, reject) => {
         try {
-            const datauser = stmtEmailtoUserID.get(email)
-            if (datauser.userid) resolve(datauser.userid)
-            else resolve('')
+            const dataUser = stmtEmailtoUserID.get(email)
+            if (dataUser && dataUser.userid) resolve(dataUser.userid)
+            else resolve(undefined)
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
@@ -123,17 +136,19 @@ function getEmailfromID(id) {
     return new Promise((resolve, reject) => {
         try {
             const user = stmtUserIDtoEmail.get(id)
-            resolve(user.email)
+            if (user && user.email)resolve(user.email)
+            else resolve(undefined)
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
     })
 }
 
-function newRole(name) {
+function newRole(dataRole) {
     return new Promise((resolve, reject) => {
         try {
-            const role = stmtAddRole.run(name)
+            const role = stmtAddRole.run(dataRole.name, dataRole.description)
+            if (role.changes === 1) resolve(dataRole)
             resolve('ok')
         } catch (error) {
             reject({code: error.code, message: error.message})
@@ -141,14 +156,31 @@ function newRole(name) {
     })
 }
 
-function addRoleToUser(email, role) {
+function addRoleToUser(role, userid) {
     return new Promise(async (resolve, reject) => {
         try {
-            const userid = await getUserIDfromEmail(email)
             const dataRole = await getRole(role)
             const output = stmtAddUserRole.run(userid, dataRole.id)
+            resolve('Role ' + role + ' added to user ' + userid)
+        } catch (error) {
+            reject({code: error.code, message: error.message})
+        }
+    })
+}
 
-            resolve('Role ' + role + ' added to user ' + email)
+function updateRolesUser(userid, roles) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const output = stmtDeleteRolesUser.run(userid)
+
+            let rolesAdded = []
+
+            for (const rol of roles) {
+                await addRoleToUser(rol, userid)
+                rolesAdded.push(rol)
+            }
+
+            resolve(rolesAdded)
         } catch (error) {
             reject({code: error.code, message: error.message})
         }
@@ -166,15 +198,31 @@ function getRole(name) {
     })
 }
 
+function deleteRoleUser(role, userid) {
+    return new Promise((resolve, reject) => {
+        try {
+            resolve('Not Implemented')
+        } catch (error) {
+            reject({code: error.code, message: error.message})
+        }
+    })
+}
+
 function getListRoles(name) {
     return new Promise((resolve, reject) => {
         try {
             const role = stmtGetRoles.all()
             let roleuser = []
 
-            roles.forEach(rol => {
-                roleuser.push(rol.name)
-            });
+            for (const rol of role){
+                dataRole = {}
+
+                dataRole.id = rol.id
+                dataRole.name = rol.name
+                dataRole.description = rol.description
+
+                roleuser.push(dataRole)
+            }
 
             resolve(roleuser)
         } catch (error) {
@@ -190,9 +238,9 @@ function getRolesUser(email) {
 
             let roleuser = []
 
-            roles.forEach(rol => {
+            for (const rol of roles) {
                 roleuser.push(rol.name)
-            });
+            }
 
             resolve(roleuser)
         } catch (error) {
@@ -204,7 +252,7 @@ function getRolesUser(email) {
 module.exports = {
     add: addUser,
     deleteUser: deleteUser,
-    modify: modifyUser,
+    updateUser: updateUser,
     list: listUsers,
     getUser: getUser,
     getUserID: getUserIDfromEmail,
@@ -215,4 +263,6 @@ module.exports = {
     getRole: getRole,
     getListRoles: getListRoles,
     getRolesUser: getRolesUser,
+    updateRolesUser: updateRolesUser,
+    deleteRoleUser: deleteRoleUser,
 }
