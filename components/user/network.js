@@ -10,7 +10,7 @@ router.get('/info/:userid', checkAuth('admin'), function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 
@@ -29,7 +29,7 @@ router.put('/update/:userid', checkAuth('admin'), function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 
@@ -39,7 +39,7 @@ router.delete('/delete/:userid', checkAuth('admin'), function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 
@@ -49,21 +49,7 @@ router.get('/list', checkAuth('admin'), function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
-        })
-})
-
-router.post('/roletouser', checkAuth('admin'), function(req, res) {
-
-    dataUser.username = req.body.username
-    dataUser.role = req.body.role
-
-    controller.roleToUser()
-        .then((message) => {
-            response.success(req, res, message, 200)
-        })
-        .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 

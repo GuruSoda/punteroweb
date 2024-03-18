@@ -1,5 +1,4 @@
 const store = require('../../store/userStore')
-const error = require('../../utils/error')
 
 function getUser(userid) {
     return new Promise(async (resolve, reject) => {
@@ -8,6 +7,7 @@ function getUser(userid) {
             if (user) resolve(user)
             else reject('User not found')
         } catch (e) {
+            e.userMessage = 'Error tomando informacion del usuario'
             reject (e)
         }
     })
@@ -19,6 +19,8 @@ function updateUser(dataUser) {
             const infoUser = store.getUser(dataUser.userid)
             if (!infoUser) return reject('User not found')
 
+            if (!dataUser.roles) dataUser.roles = ["user"]
+
             // verifico que existan los roles
             for (const rol of dataUser.roles) {
                 let infoRole = store.getRole(rol)                
@@ -29,6 +31,7 @@ function updateUser(dataUser) {
             user.roles = store.updateRolesUser(dataUser.userid, dataUser.roles)
             resolve(user)
         } catch (error) {
+            error.userMessage = 'No se pudo actualizar el estado'
             reject(error)
         }
     })
@@ -39,6 +42,7 @@ function getAllUsers() {
         try {
             resolve(store.list())
         } catch (e) {
+            e.userMessage = 'Error adquiriendo listado de usuarios'
             reject(e)
         }
     })
@@ -53,16 +57,9 @@ function deleteUser(userid) {
 
             resolve (store.deleteUser(userid))
         } catch (e) {
+            e.userMessage = 'Error al borrar usuario'
             reject (e)
         }
-    })
-}
-
-function roleToUser(role, user) {
-    return new Promise(async (resolve, reject) => {
-        // store.deleteUser(userid)
-        //     .then(message => resolve(message))
-        //     .catch(message => reject(message))
     })
 }
 
@@ -71,5 +68,4 @@ module.exports = {
     updateUser: updateUser,
     getall: getAllUsers,
     deleteUser: deleteUser,
-    roleToUser: roleToUser,
 }

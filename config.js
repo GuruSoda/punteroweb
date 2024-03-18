@@ -9,7 +9,7 @@ const config = {
         secret: process.env.SECRETJWT || 'sssssh-silencio',
     },
     database: {
-        filedb: process.env.FILEDB  || ':memory:',
+        filedb: process.env.FILEDB  || './database/punteroweb.sqlite',
     },
     model: {
         alphabetIDUser: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",

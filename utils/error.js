@@ -1,21 +1,10 @@
-function error (message, status, details) {
+function error (userMessage, statusCode, errorDetails) {
 
     let new_error = new Error()
 
-    new_error.message = message || 'unknow error'
-    new_error.status = status || 500
-    new_error.details = details || ''
-
-    return new_error
-}
-
-function serviceError (message, code, details) {
-
-    let new_error = new Error()
-
-    new_error.message = message || 'unknow error'
-    new_error.code = code || '000'
-    new_error.details = details || ''
+    new_error.message = userMessage || 'Unknow Error'
+    new_error.status = statusCode || 500
+    new_error.details = errorDetails || ''
 
     return new_error
 }

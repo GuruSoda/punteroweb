@@ -1,4 +1,5 @@
 const userModel = require('./userModel')
+const userError = require('./userError')
 
 const stmtAddUser = userModel.prepare('insert into user(userid, username, email, name, lastname) values(?, ?, ?, ?, ?)')
 const stmtAddPassword = userModel.prepare('insert into password(userid, password) values(?, ?)')
@@ -25,7 +26,7 @@ function addUser (dataUser) {
             const userid = getUserIDfromEmail(dataUser.email)
             if (userid) return 'Email exists'
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 
         try {
@@ -35,7 +36,7 @@ function addUser (dataUser) {
             const outDeletePassword = stmtDeletePassword.run(dataUser.userid)
             const outDeleteUser = stmtDeleteUser.run(dataUser.userid)
             const outDeleteRoleUser = stmtDeleteRoleUser.run(dataUser.userid)
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 
         return {
@@ -57,7 +58,7 @@ function deleteUser (userid) {
             return 'User Deleted'
         } catch (error) {
             if (typeof error === 'string') return error
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -69,14 +70,14 @@ function updateUser(dataUser) {
             console.log(user)
             return user
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
 function listUsers() {
         try {
             let out = []
-            out = stmtListAllUsers.all()            
+            out = stmtListAllUsers.all()
 
             let usuarios = []
             for (const item of out){
@@ -84,7 +85,7 @@ function listUsers() {
             }            
             return usuarios
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -94,7 +95,7 @@ function getUser(userid) {
             if (user) user.roles = getRolesUser(user.email)
             return user
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -103,7 +104,7 @@ function getUserPassword(userid) {
             let pass = stmtGetUserPassword.get(userid)
             return (pass && pass.password) ? pass.password : undefined
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -112,7 +113,7 @@ function getUserIDfromEmail(email) {
             const dataUser = stmtEmailtoUserID.get(email)
             return (dataUser && dataUser.userid) ? dataUser.userid : undefined
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -121,7 +122,7 @@ function getEmailfromID(id) {
             const user = stmtUserIDtoEmail.get(id)
             return (user && user.email) ? user.email : undefined
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -130,7 +131,7 @@ function newRole(dataRole) {
             const role = stmtAddRole.run(dataRole.name, dataRole.description)
             return (role.changes === 1) ? dataRole : 'ok'
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -140,7 +141,7 @@ function addRoleToUser(role, userid) {
             const output = stmtAddUserRole.run(userid, dataRole.id)
             return 'Role ' + role + ' added to user ' + userid
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -157,7 +158,7 @@ function updateRolesUser(userid, roles) {
 
             return rolesAdded
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -165,15 +166,7 @@ function getRole(name) {
         try {
             return stmtGetRole.get(name)
         } catch (error) {
-            throw({code: error.code, message: error.message})
-        }
-}
-
-function deleteRoleUser(role, userid) {
-        try {
-            return 'Not Implemented'
-        } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -194,7 +187,7 @@ function getListRoles(name) {
 
             return roleuser
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -210,7 +203,7 @@ function getRolesUser(email) {
 
             return roleuser
         } catch (error) {
-            throw({code: error.code, message: error.message})
+            throw userError(error.message, error.code)
         }
 }
 
@@ -229,5 +222,4 @@ module.exports = {
     getListRoles: getListRoles,
     getRolesUser: getRolesUser,
     updateRolesUser: updateRolesUser,
-    deleteRoleUser: deleteRoleUser,
 }
