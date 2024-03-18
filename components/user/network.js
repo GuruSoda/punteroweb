@@ -36,7 +36,7 @@ router.put('/update/:userid', checkAuth('admin'), function(req, res) {
 router.delete('/delete/:userid', checkAuth('admin'), function(req, res) {
     controller.deleteUser(req.params.userid)
         .then((message) => {
-            response.success(req, res, message, 201)
+            response.success(req, res, message, 200)
         })
         .catch(e => {
             response.error(req, res, e, 500, e)

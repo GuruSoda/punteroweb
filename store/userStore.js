@@ -9,6 +9,7 @@ const stmtUpdateUser = userModel.prepare('update user set username=?, name=?, la
 const stmtEmailtoUserID = userModel.prepare('select userid from user where email = ?')
 const stmtUserIDtoEmail = userModel.prepare('select email from user where userid = ?')
 const stmtListEmail = userModel.prepare('select email from user')
+const stmtListAllUsers = userModel.prepare('select userid, username, name, lastname, email, createdat from user')
 const stmtGetUser = userModel.prepare('select userid, username, name, lastname, email, createdat from user where userid = ?')
 //
 const stmtAddRole = userModel.prepare('insert into role (name, description) values(?, ?)')
@@ -20,12 +21,11 @@ const stmtAddUserRole = userModel.prepare('insert or ignore into user_role (user
 const stmtGetRolesUser = userModel.prepare('select r.id, r.name, r.description from role r, user_role ur, user u where r.id = ur.roleid and u.userid = ur.userid and u.email == ?')
 
 function addUser (dataUser) {
-    return new Promise(async (resolve, reject) => {
         try {
-            const userid = await getUserIDfromEmail(dataUser.email)
-            if (userid) return reject('Email exists')
+            const userid = getUserIDfromEmail(dataUser.email)
+            if (userid) return 'Email exists'
         } catch (error) {
-            return reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
 
         try {
@@ -34,182 +34,150 @@ function addUser (dataUser) {
         } catch(error) {
             const outDeletePassword = stmtDeletePassword.run(dataUser.userid)
             const outDeleteUser = stmtDeleteUser.run(dataUser.userid)
-            const outDeleteRoleUser = stmtDeleteRoleUser.run(dataUser.userid)            
-            return reject({code: error.code, message: error.message})
+            const outDeleteRoleUser = stmtDeleteRoleUser.run(dataUser.userid)
+            throw({code: error.code, message: error.message})
         }
 
-        resolve({
+        return {
             userid: dataUser.userid,
             username: dataUser.username,
             email: dataUser.email,
             name: dataUser.name,
             lastname: dataUser.lastname
-        })
-    })
+        }
 }
 
 function deleteUser (userid) {
-    return new Promise(async (resolve, reject) => {
         try {
-            const user = await getUser(userid)
-            if (!user.userid) reject('User not found')
-
+            // borro los roles asociados al usuario
+            const output = stmtDeleteRolesUser.run(user.userid)
             // borro el usuario
             stmtDeleteUser.run(user.userid)
-            // borro los roles asociados al usuario
-            stmtDeleteRoleUser.run(user.userid)
 
-            resolve('User Deleted')
+            return 'User Deleted'
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            if (typeof error === 'string') return error
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function updateUser(dataUser) {
-    return new Promise(async (resolve, reject) => {
         try {
             let user = stmtUpdateUser.run(dataUser.username, dataUser.name, dataUser.lastname, dataUser.email, dataUser.userid)
-            user = await getUser(dataUser.userid)
-            resolve(user)
+
+            user = getUser(dataUser.userid)
+            console.log(user)
+            return user
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function listUsers() {
-    return new Promise(async (resolve, reject) => {
         try {
             let out = []
-            out = stmtListEmail.all()
+            out = stmtListAllUsers.all()            
 
             let usuarios = []
             for (const item of out){
-                const userid = await getUserIDfromEmail(item.email)
-                usuarios.push(await getUser(userid))
+                usuarios.push(getUser(item.userid))
             }            
-            resolve(usuarios)
+            return usuarios
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getUser(userid) {
-    return new Promise(async (resolve, reject) => {
         try {
             let user = stmtGetUser.get(userid)
-            if (user) user.roles = await getRolesUser(user.email)
-            resolve(user)
+            if (user) user.roles = getRolesUser(user.email)
+            return user
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getUserPassword(userid) {
-    return new Promise(async (resolve, reject) => {
         try {
             let pass = stmtGetUserPassword.get(userid)
-            if (pass && pass.password) resolve(pass.password)
-            else resolve(undefined)
+            return (pass && pass.password) ? pass.password : undefined
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getUserIDfromEmail(email) {
-    return new Promise((resolve, reject) => {
         try {
             const dataUser = stmtEmailtoUserID.get(email)
-            if (dataUser && dataUser.userid) resolve(dataUser.userid)
-            else resolve(undefined)
+            return (dataUser && dataUser.userid) ? dataUser.userid : undefined
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
-function getEmailfromID(id) {    
-    return new Promise((resolve, reject) => {
+function getEmailfromID(id) {
         try {
             const user = stmtUserIDtoEmail.get(id)
-            if (user && user.email)resolve(user.email)
-            else resolve(undefined)
+            return (user && user.email) ? user.email : undefined
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function newRole(dataRole) {
-    return new Promise((resolve, reject) => {
         try {
             const role = stmtAddRole.run(dataRole.name, dataRole.description)
-            if (role.changes === 1) resolve(dataRole)
-            resolve('ok')
+            return (role.changes === 1) ? dataRole : 'ok'
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function addRoleToUser(role, userid) {
-    return new Promise(async (resolve, reject) => {
         try {
-            const dataRole = await getRole(role)
+            const dataRole = getRole(role)
             const output = stmtAddUserRole.run(userid, dataRole.id)
-            resolve('Role ' + role + ' added to user ' + userid)
+            return 'Role ' + role + ' added to user ' + userid
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function updateRolesUser(userid, roles) {
-    return new Promise(async (resolve, reject) => {
         try {
             const output = stmtDeleteRolesUser.run(userid)
 
             let rolesAdded = []
 
             for (const rol of roles) {
-                await addRoleToUser(rol, userid)
+                addRoleToUser(rol, userid)
                 rolesAdded.push(rol)
             }
 
-            resolve(rolesAdded)
+            return rolesAdded
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getRole(name) {
-    return new Promise((resolve, reject) => {
         try {
-            const role = stmtGetRole.get(name)
-            resolve(role)
+            return stmtGetRole.get(name)
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function deleteRoleUser(role, userid) {
-    return new Promise((resolve, reject) => {
         try {
-            resolve('Not Implemented')
+            return 'Not Implemented'
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getListRoles(name) {
-    return new Promise((resolve, reject) => {
         try {
             const role = stmtGetRoles.all()
             let roleuser = []
@@ -224,15 +192,13 @@ function getListRoles(name) {
                 roleuser.push(dataRole)
             }
 
-            resolve(roleuser)
+            return roleuser
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 function getRolesUser(email) {
-    return new Promise(async (resolve, reject) => {
         try {
             const roles = stmtGetRolesUser.all(email)
 
@@ -242,11 +208,10 @@ function getRolesUser(email) {
                 roleuser.push(rol.name)
             }
 
-            resolve(roleuser)
+            return roleuser
         } catch (error) {
-            reject({code: error.code, message: error.message})
+            throw({code: error.code, message: error.message})
         }
-    })
 }
 
 module.exports = {

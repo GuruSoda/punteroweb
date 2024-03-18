@@ -9,7 +9,8 @@ CREATE TABLE if not exists puntero (\
     description text,\
     added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\
     starts integer,\
-    user_id integer\
+    directory text nocase default '/',\
+    userid integer\
 );\
 CREATE INDEX if not exists puntero_url_idx ON puntero (url);\
 CREATE TABLE if not exists label (\
