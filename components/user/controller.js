@@ -5,7 +5,7 @@ function getUser(userid) {
         try {
             const user = store.getUser(userid)
             if (user) resolve(user)
-            else reject('User not found')
+            else reject({userMessage: 'User not found'})
         } catch (e) {
             e.userMessage = 'Error tomando informacion del usuario'
             reject (e)
@@ -17,14 +17,16 @@ function updateUser(dataUser) {
     return new Promise((resolve, reject) => {
         try {
             const infoUser = store.getUser(dataUser.userid)
-            if (!infoUser) return reject('User not found')
+            if (!infoUser) return reject({userMessage: 'User not found'})
 
             if (!dataUser.roles) dataUser.roles = ["user"]
 
             // verifico que existan los roles
             for (const rol of dataUser.roles) {
-                let infoRole = store.getRole(rol)                
-                if (!infoRole) return reject ('Rol \'' + rol + '\' Not found')
+                let infoRole = store.getRole(rol)
+                if (!infoRole) {
+                    return reject ({userMessage: 'Role \'' + rol + '\' Not found'})
+                }
             }
 
             let user = store.updateUser(dataUser)
@@ -53,7 +55,7 @@ function deleteUser(userid) {
         try {
             const user = store.getUser(userid)
 
-            if (!user) return reject('User not found')
+            if (!user) return reject({userMessage: 'User not found'})
 
             resolve (store.deleteUser(userid))
         } catch (e) {

@@ -8,17 +8,17 @@ init()
 
 function login(dataLogin) {
     return new Promise(async (resolve, reject) => {
-        if (!dataLogin.email) reject('email is required.')
-        if (!dataLogin.password) reject('password is required.')
+        if (!dataLogin.email) return reject({userMessage: 'email is required'})
+        if (!dataLogin.password) return reject({userMessage: 'password is required'})
 
         let  dataUser = {}
         try {
-            dataUser.userid = store.getUserID(dataLogin.email)
-            if (!dataUser.userid) return reject('User or Password Incorrect')
+            dataUser.userid = store.getUserByEmail(dataLogin.email)
+            if (!dataUser.userid) return reject({userMessage: 'User or Password Incorrect'})
             dataUser.password = store.getUserPassword(dataUser.userid)
-            if (!dataUser.password) return reject('User without pass?')
+            if (!dataUser.password) return reject({userMessage: 'User without pass?'})
         } catch (e) {
-            return reject('No autorizado')
+            return reject({userMessage: 'No autorizado'})
         }
 
         try {
@@ -27,10 +27,10 @@ function login(dataLogin) {
             if (result) {
                 delete dataUser.password
                 dataUser = store.getUser(dataUser.userid)
-                dataUser.token = auth.sign({userid: dataUser.userid, roles: dataUser.roles})
+                dataUser.accessToken = auth.sign({userid: dataUser.userid, roles: dataUser.roles})
                 resolve(dataUser)
             } else {
-                reject('User or Pass incorrect.')
+                reject({userMessage: 'Email or Password incorrect.'})
             }
         } catch (e) {
             reject(e)
@@ -40,18 +40,25 @@ function login(dataLogin) {
 
 function newUser(dataUser) {
     return new Promise(async (resolve, reject) => {
-        if (!dataUser.email) reject('email is required.')
-        if (!dataUser.password) reject('password is required.')
+        if (!dataUser.email) return reject({userMessage: 'email is required'})
+        if (!dataUser.password) return reject({userMessage: 'password is required'})
+        if (!dataUser.username) return reject({userMessage: 'username is required'})
+
+        let user = store.getUserByEmail(dataUser.email)
+
+        if (user) return reject({userMessage:'Email ' + dataUser.email + ' Already Exists'})
+
+        if (store.getUserByUserName(dataUser.username)) return reject({userMessage:'UserName ' + dataUser.username + ' Already Exists'})
 
         dataUser.userid = nanoid()
         dataUser.password = await bcrypt.hash(dataUser.password, 5)
 
         try {
-            const user = store.add(dataUser)
+            user = store.add(dataUser)
             store.addRoleToUser('user', user.userid)
             resolve(user)
         } catch (error) {
-            if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') reject('Usuario existente')
+            error.userMessage = 'Error Creando usuario'
             reject(error)
         }
     })
@@ -74,7 +81,7 @@ async function init() {
         
         // Agrego usuario por default si no existe
         let admin = {}
-        let userid = store.getUserID('admin@localhost')
+        let userid = store.getUserByEmail('admin@localhost')
         if (!userid) {
             admin = await newUser({
                 email: "admin@localhost",

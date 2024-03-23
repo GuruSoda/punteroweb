@@ -15,7 +15,7 @@ router.post('/login', function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
         })
 })
 
@@ -25,7 +25,7 @@ router.post('/logout', function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 
@@ -43,7 +43,7 @@ router.post('/register', function(req, res) {
             response.success(req, res, message, 201)
         })
         .catch(e => {
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
         })
 })
 

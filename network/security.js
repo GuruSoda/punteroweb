@@ -10,17 +10,17 @@ function checkAuth(action) {
                         next()
                         break
                     } else {
-                        throw error('not authorized', 401, "userid " + req.headers.tokenDecoded.userid + ' NO es administrador')
+                        throw error('not authorized', 401, {message: "userid " + req.headers.tokenDecoded.userid + ' NO es administrador'})
                     }
                 }
-                throw error('not authorized', 401, 'No tiene el header authorization o tokenDecoded')
+                throw error('not authorized', 401, {message: 'No tiene el header authorization o tokenDecoded'})
                 break;
             case 'logged':
                 if (req.headers['authorization'] !== undefined && req.headers['tokenDecoded'] !== undefined) {
                     next()
                     break
                 }
-                throw error('not authorized', 401, 'No tiene el header authorization o tokenDecoded')
+                throw error('not authorized', 401, {message:'No tiene el header authorization o tokenDecoded'})
                 break
             default:
                 next();
@@ -37,7 +37,7 @@ function decodeToken () {
         try {
             if (authorization) req.headers.tokenDecoded = auth.verify(authorization.replace('Bearer ', ''))
         } catch(err) {
-            throw error('Not Authorized', 401, 'fallo la verificacion del token (' + authorization + ') - ' + err.message)
+            throw error('Not Authorized', 401, {message: 'fallo la verificacion del token (' + authorization + ') - ' + err.message})
         }
         next()
     }
