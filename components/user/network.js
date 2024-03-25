@@ -4,6 +4,16 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
 
+router.get('/list', checkAuth('admin'), function(req, res) {
+    controller.getall()
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(e => {
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
+        })
+})
+
 router.get('/:userid', checkAuth('admin'), function(req, res) {
     controller.getUser(req.params.userid)
         .then((message) => {
@@ -35,16 +45,6 @@ router.put('/:userid', checkAuth('admin'), function(req, res) {
 
 router.delete('/:userid', checkAuth('admin'), function(req, res) {
     controller.deleteUser(req.params.userid)
-        .then((message) => {
-            response.success(req, res, message, 200)
-        })
-        .catch(e => {
-            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
-        })
-})
-
-router.get('/list', checkAuth('admin'), function(req, res) {
-    controller.getall()
         .then((message) => {
             response.success(req, res, message, 200)
         })

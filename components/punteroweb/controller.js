@@ -5,16 +5,12 @@ const nanoid = require('nanoid').customAlphabet(config.model.alphabetIDURL, conf
 
 function addURL(dataPuntero) {
     return new Promise((resolve, reject) => {
-        if (!dataPuntero.url) {
-            reject('Invalid parameters (url cannot be empty)')
-            return
-        }
+        if (!dataPuntero.url) return reject('Invalid parameters (url cannot be empty)')
 
         dataPuntero.url = dataPuntero.url.toLowerCase().trim()
 
-        const urltest = new URL(dataPuntero.url)
-
-        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
+//        const urltest = new URL(dataPuntero.url)
+//        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
 
         dataPuntero.id = nanoid()
 
@@ -22,16 +18,15 @@ function addURL(dataPuntero) {
             store.add(dataPuntero)
             resolve(dataPuntero.id)
         } catch (e) {
-            reject(message)
+            reject(e)
         }
     })
 }
 
-function infoURL(url) {
+function infoURL(id) {
     return new Promise((resolve, reject) => {
-        url = url.toLowerCase().trim()
         try {
-            store.info(url)
+            store.info(id)
             resolve(message)
         } catch (e) {
             reject(e)
@@ -39,21 +34,12 @@ function infoURL(url) {
     })
 }
 
-function deleteURL(url) {
+function deleteURL(id) {
     return new Promise((resolve, reject) => {
-        if (!url) {
-            reject('Invalid parameters (url cannot be empty)')
-            return
-        }
-
-        url = url.toLowerCase().trim()
-
-        const urltest = new URL(url)
-
-        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
+        if (!url) return reject('Invalid parameters (id cannot be empty)')
 
         try {
-            store.delete(url)
+            store.delete(id)
             resolve(message)
         } catch (e) {
             reject(e)

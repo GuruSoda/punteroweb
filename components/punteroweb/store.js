@@ -1,13 +1,13 @@
 const Model = require('./model')
 
 const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, starts) values(?, ?, ?, ?, ?)')
-const stmtInfo = Model.prepare('select id, url, title, description, added, starts from puntero where url = ?')
+const stmtInfo = Model.prepare('select id, url, title, description, added, starts from puntero where id = ?')
 const stmtList = Model.prepare('select url from puntero')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
 const stmtIDLabel = Model.prepare('select id from label where label = ?')
 const stmtAddLabel = Model.prepare('insert or ignore INTO label (label) values (?)')
 const stmtAddPunteroLabel = Model.prepare('insert INTO punterolabel (id_puntero, id_label) values (?, ?)')
-const stmtDelete = Model.prepare('delete from puntero where url = ?')
+const stmtDelete = Model.prepare('delete from puntero where id = ?')
 
 function labels(id) {
     try {
@@ -47,48 +47,44 @@ function punteroToObject(url) {
     }
 }
 
-function addURL (dataPuntero) {
+function addPointer (dataPuntero) {
     try {
         const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.starts)
 
-        const id_puntero = salidaadd.lastInsertRowid
-
         // Agrego las etiquetas, existan o no.
-        dataPuntero.labels.forEach(strlabel => stmtAddLabel.run(strlabel))
+        for (let label of dataPuntero.labels) stmtAddLabel.run(label)
 
         // saco el id y pueblo la tabla punterolabel
-        dataPuntero.labels.forEach(strlabel => {
-            let id_label = stmtIDLabel.get(strlabel)
+        for (let label of dataPuntero.labels) {
+            let id_label = stmtIDLabel.get(label)
             stmtAddPunteroLabel.run(id_puntero, id_label.id)
-        })
+        }
     } catch(error) {
         throw({code: error.code, mensaje: error.message})
     }
 }
 
-function infoURL(url) {
-    // Anteriormente la informacion era retornada en base al id
-    //    const salida = stmtInfo.get(Math.trunc(parseInt(id, 10)))
-
+function infoPointer(id) {
     try {
-        let registro = punteroToObject(url)
+        let registro = stmtInfo.get(id)
 
-        if (Object.keys(registro).length() === 0) reject('URL no encontrada')
+        if (registro) return registro
+        else throw ('Pointer not found')
     } catch(error) {
         throw({code: error.code, mensaje: error.message})
     }
 }
 
-function deleteURL (url) {
+function deletePointer (id) {
     try {                
-        const salida = stmtDelete.run(url)
-        if (!salida.changes) throw ('URL not found.')
+        const salida = stmtDelete.run(id)
+        if (!salida.changes) throw ('Pointer not found')
     } catch(error) {
-        throw(error)
+        throw({code: error.code, mensaje: error.message})
     }
 }
 
-function listURLs (count, page) {
+function listPointers (count, page) {
     try {
         const salida = stmtList.all()
         let punteros = []
@@ -97,11 +93,11 @@ function listURLs (count, page) {
             punteros.push(punteroToObject(element.url))
         });
     } catch(error) {
-        throw(error)
+        throw({code: error.code, mensaje: error.message})
     }
 }
 
-function countURLs (dataFile) {
+function countPointers (dataFile) {
     Model.all('select count(id) as total from file', (err, rows) => {
         if (err) reject (err)
         else resolve(rows[0].total)
@@ -109,9 +105,9 @@ function countURLs (dataFile) {
 }
 
 module.exports = {
-    add: addURL,
-    info: infoURL,
-    delete: deleteURL,
-    list: listURLs,
-    count: countURLs,
+    add: addPointer,
+    info: infoPointer,
+    delete: deletePointer,
+    list: listPointers,
+    count: countPointers,
 }
