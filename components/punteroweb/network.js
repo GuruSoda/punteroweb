@@ -3,7 +3,7 @@ const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
 
-router.post('/add', function(req, res) {
+router.post('/', function(req, res) {
 
     const dataPuntero = {
         url: req.body.url,
@@ -22,8 +22,8 @@ router.post('/add', function(req, res) {
         })
 })
 
-router.get('/info', async function(req, res) {
-    controller.info(req.query.url)
+router.get('/:id', async function(req, res) {
+    controller.info(req.params.id)
         .then((message) => {
             response.success(req, res, message, 200)
         })
@@ -33,8 +33,19 @@ router.get('/info', async function(req, res) {
         })
 });
 
-router.delete('/delete', async function(req, res) {
-    controller.delete(req.query.url)
+router.put('/:id', async function(req, res) {
+    controller.modify(req.params.id)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(e => {
+            if (e.error) response.error(req, res, 'Error tomando info', 500, e)
+            else response.error(req, res, 'URL not found', 404, e)
+        })
+});
+
+router.delete('/:id', async function(req, res) {
+    controller.delete(req.params.id)
         .then((message) => {
             response.success(req, res, message, 200)
         })

@@ -16,23 +16,26 @@ function addURL(dataPuntero) {
 
         if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
 
-        dataPuntero.urlid = nanoid()
+        dataPuntero.id = nanoid()
 
-        store.add(dataPuntero)
-            .then(message => resolve(message))
-            .catch(message => {
-                if (message.code === 'SQLITE_CONSTRAINT_UNIQUE') reject('URL Existe.')
-                else reject(message)
-            })
+        try {
+            store.add(dataPuntero)
+            resolve(dataPuntero.id)
+        } catch (e) {
+            reject(message)
+        }
     })
 }
 
 function infoURL(url) {
     return new Promise((resolve, reject) => {
         url = url.toLowerCase().trim()
-        store.info(url)
-            .then(message => { resolve(message) })
-            .catch(message => { reject(message) })
+        try {
+            store.info(url)
+            resolve(message)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
@@ -49,12 +52,12 @@ function deleteURL(url) {
 
         if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
 
-        store.delete(url)
-            .then(message => resolve(message))
-            .catch(message => {
-                if (message.code === 'SQLITE_CONSTRAINT_UNIQUE') reject('URL Existe.')
-                else reject(message)
-            })
+        try {
+            store.delete(url)
+            resolve(message)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
@@ -64,17 +67,23 @@ function listURLs(count, page) {
         count = count || 100
         page = page || 1
 
-        store.list(count, page)
-            .then(message => resolve(message))
-            .catch(message => reject(message))
+        try {
+            store.list(count, page)
+            resolve(message)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
 function countURLs() {
     return new Promise((resolve, reject) => {
-        store.count()
-            .then(message => resolve(message))
-            .catch(message => reject(message))
+        try {
+            store.count()
+            resolve(message)
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 

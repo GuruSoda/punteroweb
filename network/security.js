@@ -34,8 +34,14 @@ function decodeToken () {
     return function middleware(req, res, next) {
         const authorization = req.headers.authorization || undefined
 
+        // puede venir la palabra Bearer sola
+        let token = ''
+
+        if (authorization)
+            token = authorization.replace('Bearer', '').trim()
+
         try {
-            if (authorization) req.headers.tokenDecoded = auth.verify(authorization.replace('Bearer ', ''))
+            if (token) req.headers.tokenDecoded = auth.verify(token)
         } catch(err) {
             throw error('Not Authorized', 401, {message: 'fallo la verificacion del token (' + authorization + ') - ' + err.message})
         }

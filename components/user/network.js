@@ -4,7 +4,7 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
 
-router.get('/info/:userid', checkAuth('admin'), function(req, res) {
+router.get('/:userid', checkAuth('admin'), function(req, res) {
     controller.getUser(req.params.userid)
         .then((message) => {
             response.success(req, res, message, 200)
@@ -14,7 +14,7 @@ router.get('/info/:userid', checkAuth('admin'), function(req, res) {
         })
 })
 
-router.put('/update/:userid', checkAuth('admin'), function(req, res) {
+router.put('/:userid', checkAuth('admin'), function(req, res) {
     dataUser = {}
 
     dataUser.userid = req.params.userid
@@ -33,7 +33,7 @@ router.put('/update/:userid', checkAuth('admin'), function(req, res) {
         })
 })
 
-router.delete('/delete/:userid', checkAuth('admin'), function(req, res) {
+router.delete('/:userid', checkAuth('admin'), function(req, res) {
     controller.deleteUser(req.params.userid)
         .then((message) => {
             response.success(req, res, message, 200)
