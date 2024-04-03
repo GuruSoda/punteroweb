@@ -18,7 +18,7 @@ function addPointer(dataPuntero) {
 
         try {
             store.add(dataPuntero)
-            resolve(dataPuntero.id)
+            resolve({id: dataPuntero.id})
         } catch (e) {
             reject(e)
         }

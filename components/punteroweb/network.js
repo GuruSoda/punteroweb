@@ -67,7 +67,7 @@ router.post('/', function(req, res) {
 
     controller.add(dataPuntero)
         .then((message) => {
-            response.success(req, res, message, 200)
+            response.success(req, res, message, 201)
         })
         .catch(e => {
             e.userMessage = "Error agregando puntero"
