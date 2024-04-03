@@ -47,4 +47,18 @@ router.post('/register', function(req, res) {
         })
 })
 
+router.post('/refreshtoken', function (req, res) {
+    dataToken = {}
+    dataToken.refreshToken = req.body.refreshToken
+    dataToken.accessToken = req.body.accessToken
+
+    try {
+        let tokens = controller.refreshtoken(dataToken)
+        response.success(req, res, tokens, 201)
+    } catch (e) {
+        response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
+
+    }
+})
+
 module.exports = router

@@ -3,8 +3,20 @@ const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
 
-router.get('/list', async function(req, res) {
-    controller.list(req.query.count, req.query.page)
+router.get('/', async function(req, res) {
+    const { count, page } = req.query
+
+    controller.list(count, page)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(e => {
+            response.error(req, res, 'Error listando Punteros', 500, e)
+        })
+});
+
+router.get('/labels', async function(req, res) {
+    controller.listLabels()
         .then((message) => {
             response.success(req, res, message, 200)
         })
@@ -33,6 +45,16 @@ router.get('/title', async function(req, res) {
         })
 });
 
+router.get('/pointer', async function(req, res) {
+    controller.getPointerByURL(req.query.url)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(e => {
+            response.error(req, res, e, 500, e)
+        })
+});
+
 router.post('/', function(req, res) {
 
     const dataPuntero = {
@@ -48,6 +70,7 @@ router.post('/', function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
+            e.userMessage = "Error agregando puntero"
             response.error(req, res, e, 500, e)
         })
 })
@@ -64,13 +87,22 @@ router.get('/:id', async function(req, res) {
 });
 
 router.put('/:id', async function(req, res) {
-    controller.modify(req.params.id)
+
+    dataPointer = {}
+
+    dataPointer.id = req.params.id
+    dataPointer.url = req.body.url
+    dataPointer.title = req.body.title
+    dataPointer.description = req.body.description
+    dataPointer.stars = req.body.stars
+    dataPointer.directory = req.body.directory
+
+    controller.modify(dataPointer)
         .then((message) => {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            if (e.error) response.error(req, res, 'Error tomando info', 500, e)
-            else response.error(req, res, 'URL not found', 404, e)
+            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
         })
 });
 

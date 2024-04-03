@@ -15,6 +15,7 @@ function login(dataLogin) {
         try {
             dataUser.userid = store.getUserByEmail(dataLogin.email)
             if (!dataUser.userid) return reject({userMessage: 'User or Password Incorrect'})
+
             dataUser.password = store.getUserPassword(dataUser.userid)
             if (!dataUser.password) return reject({userMessage: 'User without pass?'})
         } catch (e) {
@@ -27,7 +28,8 @@ function login(dataLogin) {
             if (result) {
                 delete dataUser.password
                 dataUser = store.getUser(dataUser.userid)
-                dataUser.accessToken = auth.sign({userid: dataUser.userid, roles: dataUser.roles})
+                dataUser.accessToken = auth.sign({sub: dataUser.userid, roles: dataUser.roles})
+                dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid})
                 resolve(dataUser)
             } else {
                 reject({userMessage: 'Email or Password incorrect.'})
@@ -70,6 +72,26 @@ function logout() {
     })
 }
 
+function refreshToken(dataUser) {
+    return new Promise((resolve, reject) => {
+        try {
+            let user = store.getUser(dataUser.sup)
+
+            if (dataUser.userid) {
+                delete dataUser.password
+                dataUser = store.getUser(dataUser.userid)
+                dataUser.accessToken = auth.sign({sub: dataUser.userid, roles: dataUser.roles})
+                dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid})
+                resolve(dataUser)
+            } else {
+                reject({userMessage: 'Token Incorrect'})
+            }
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
 async function init() {
     try {
         // Agrego Roles por default
@@ -102,5 +124,6 @@ async function init() {
 module.exports = {
     login: login,
     logout: logout,
-    register: newUser
+    register: newUser,
+    refreshtoken: refreshToken
 }

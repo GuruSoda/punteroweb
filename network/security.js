@@ -6,7 +6,7 @@ function checkAuth(action) {
         switch(action) {
             case 'admin':
                 if (req.headers['authorization'] !== undefined && req.headers['tokenDecoded'] !== undefined) {
-                    if (req.headers.tokenDecoded.roles.indexOf("admin") > -1) {
+                    if (req.headers.tokenDecoded.roles.indexOf("admin") !== -1) {
                         next()
                         break
                     } else {

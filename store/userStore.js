@@ -25,14 +25,14 @@ const stmtGetRolesUser = userModel.prepare('select r.id, r.name, r.description f
 function addUser (dataUser) {
 
         try {
-            const outAddPassword = stmtAddPassword.run(dataUser.userid, dataUser.password)
             const outUser = stmtAddUser.run(dataUser.userid, dataUser.username, dataUser.email, dataUser.name, dataUser.lastname)
+            const outAddPassword = stmtAddPassword.run(dataUser.userid, dataUser.password)
         } catch(error) {
             const initialError = error
             try {
                 const outDeletePassword = stmtDeletePassword.run(dataUser.userid)
-                const outDeleteUser = stmtDeleteUser.run(dataUser.userid)
                 const outDeleteRolesUser = stmtDeleteRolesUser.run(dataUser.userid)
+                const outDeleteUser = stmtDeleteUser.run(dataUser.userid)
             } catch (e) {
                 console.log('Error limpiando...')
             }

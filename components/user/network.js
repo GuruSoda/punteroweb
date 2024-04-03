@@ -4,7 +4,7 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
 
-router.get('/list', checkAuth('admin'), function(req, res) {
+router.get('/', checkAuth('admin'), function(req, res) {
     controller.getall()
         .then((message) => {
             response.success(req, res, message, 200)
