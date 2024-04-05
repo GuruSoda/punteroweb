@@ -96,6 +96,7 @@ router.put('/:id', async function(req, res) {
     dataPointer.description = req.body.description
     dataPointer.stars = req.body.stars
     dataPointer.directory = req.body.directory
+    dataPointer.labels = req.body.labels
 
     controller.modify(dataPointer)
         .then((message) => {

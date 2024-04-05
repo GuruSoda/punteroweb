@@ -20,6 +20,7 @@ CREATE TABLE if not exists label (\
 CREATE TABLE if not exists punterolabel (\
     id_puntero text not null collate nocase,\
     id_label integer not null,\
+    unique(id_puntero, id_label),\
     FOREIGN KEY (id_puntero) REFERENCES puntero (id) on delete cascade ON UPDATE NO ACTION\
     FOREIGN KEY (id_label) REFERENCES label (id) on delete cascade ON UPDATE NO ACTION\
 );";

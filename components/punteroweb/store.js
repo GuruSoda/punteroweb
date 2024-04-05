@@ -7,6 +7,7 @@ const stmtInfo = Model.prepare('select id, url, title, description, added, stars
 const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ?')
 const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
+const stmtDeletePunteroLabel = Model.prepare('delete from punterolabel where id_puntero = ?')
 const stmtIDLabel = Model.prepare('select id from label where label = ?')
 const stmtAddLabel = Model.prepare('insert or ignore INTO label (label) values (?)')
 const stmtAddPunteroLabel = Model.prepare('insert INTO punterolabel (id_puntero, id_label) values (?, ?)')
@@ -104,6 +105,19 @@ function deletePointer (id) {
 function modifyPointer(dataPointer) {
     try {
         const salida = stmtUpdate.run(dataPointer.url, dataPointer.title, dataPointer.description, dataPointer.stars, dataPointer.directory, dataPointer.id)
+
+        // Agrego las etiquetas, existan o no.
+        for (let label of dataPointer.labels) stmtAddLabel.run(label)
+
+        // Borro las etiquetas del puntero
+        stmtDeletePunteroLabel.run(dataPointer.id)
+
+        // saco el id y pueblo la tabla punterolabel
+        for (let label of dataPointer.labels) {
+            let id_label = stmtIDLabel.get(label)
+            stmtAddPunteroLabel.run(dataPointer.id, id_label.id)
+        }
+
         return dataPointer
     } catch(error) {
         throw({code: error.code, mensaje: error.message})
