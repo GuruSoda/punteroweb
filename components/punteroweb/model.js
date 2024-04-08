@@ -25,7 +25,7 @@ CREATE TABLE if not exists punterolabel (\
     unique(id_puntero, id_label),\
     FOREIGN KEY (id_puntero) REFERENCES puntero (id) on delete cascade ON UPDATE NO ACTION\
     FOREIGN KEY (id_label) REFERENCES label (id) on delete cascade ON UPDATE NO ACTION\
-) WITHOUT ROWID;";
+);";
 
 db.exec(puntero)
 

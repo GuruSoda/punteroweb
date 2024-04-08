@@ -9,7 +9,7 @@ const stmtList = Model.prepare('select id, url, title, description, added, stars
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
 const stmtDeletePunteroLabel = Model.prepare('delete from punterolabel where id_puntero = ?')
 const stmtIDLabel = Model.prepare('select id from label where label = ?')
-const stmtAddLabel = Model.prepare('insert or ignore INTO label (label) values (?)')
+const stmtAddLabel = Model.prepare('insert or ignore INTO label (label, userid) values (?, ?)')
 const stmtAddPunteroLabel = Model.prepare('insert INTO punterolabel (id_puntero, id_label) values (?, ?)')
 const stmtDelete = Model.prepare('delete from puntero where id = ?')
 
@@ -53,8 +53,9 @@ function punteroToObject(url) {
 
 function addPointer (dataPuntero) {
     try {
+        console.log('dataPuntero:', dataPuntero)
         // Agrego las etiquetas, existan o no.
-        for (let label of dataPuntero.labels) stmtAddLabel.run(label)
+        for (let label of dataPuntero.labels) stmtAddLabel.run(label, dataPuntero.userid)
 
         // Agrego el puntero
         const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.starts, dataPuntero.userid)
@@ -62,11 +63,13 @@ function addPointer (dataPuntero) {
         // saco el id y pueblo la tabla punterolabel
         for (let label of dataPuntero.labels) {
             let id_label = stmtIDLabel.get(label)
+            console.log('label:', id_label)
             stmtAddPunteroLabel.run(dataPuntero.id, id_label.id)
         }
 
         if (salidaadd.changes > 0) return dataPuntero
     } catch(error) {
+        console.log('Error agregando:', error)
         throw({code: error.code, mensaje: error.message})
     }
 }
