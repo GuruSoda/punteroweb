@@ -20,7 +20,9 @@ function checkAuth(action) {
                     next()
                     break
                 }
-                throw error('not authorized', 401, {message:'No tiene el header authorization o tokenDecoded'})
+                throw error ('not authorized', 401, {message:'No tiene el header authorization o tokenDecoded'})
+                //next({message: 'not authorized', code: 401, details: {message:'No tiene el header authorization o tokenDecoded'}})
+
                 break
             default:
                 next();

@@ -1,11 +1,11 @@
 const Model = require('./model')
 const error = require('../../utils/error')
 
-const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars) values(?, ?, ?, ?, ?)')
+const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars, userid) values(?, ?, ?, ?, ?, ?)')
 const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=?')
 const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory from puntero where id = ?')
 const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ?')
-const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero')
+const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where userid=?')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
 const stmtDeletePunteroLabel = Model.prepare('delete from punterolabel where id_puntero = ?')
 const stmtIDLabel = Model.prepare('select id from label where label = ?')
@@ -57,7 +57,7 @@ function addPointer (dataPuntero) {
         for (let label of dataPuntero.labels) stmtAddLabel.run(label)
 
         // Agrego el puntero
-        const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.starts)
+        const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.starts, dataPuntero.userid)
 
         // saco el id y pueblo la tabla punterolabel
         for (let label of dataPuntero.labels) {
@@ -125,9 +125,9 @@ function modifyPointer(dataPointer) {
 }
 
 // SELECT * FROM tablaUsuarios LIMIT 5 OFFSET 3;
-function listPointers (count, page) {
+function listPointers (userid, count, page) {
     try {
-        const salida = stmtList.all()
+        const salida = stmtList.all(userid)
 
         let punteros = []
 
@@ -149,10 +149,10 @@ function countPointers (dataFile) {
     })
 }
 
-function listLabels () {
-    const stmtListLabels = Model.prepare('select label from label')
+function listLabels (userid) {
+    const stmtListLabels = Model.prepare('select label from label where userid=?')
     try {
-        const salida = stmtListLabels.all()
+        const salida = stmtListLabels.all(userid)
         let labels = []
 
         salida.forEach(element => {

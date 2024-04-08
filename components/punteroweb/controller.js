@@ -69,14 +69,14 @@ function deletePointer(id) {
     })
 }
 
-function listPointers(count, page) {
+function listPointers(userid, count, page) {
     return new Promise((resolve, reject) => {
 
         count = count || 100
         page = page || 1
 
         try {
-            resolve(store.list(count, page))
+            resolve(store.list(userid, count, page))
         } catch (e) {
             reject(e)
         }
@@ -109,10 +109,10 @@ function titleURL(url) {
     })
 }
 
-function listLabels() {
+function listLabels(userid) {
     return new Promise((resolve, reject) => {
         try {
-            resolve(store.listLabels())
+            resolve(store.listLabels(userid))
         } catch (e) {
             reject(e)
         }

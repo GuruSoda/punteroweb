@@ -2,11 +2,13 @@ const express = require('express')
 const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
+const { checkAuth } = require('../../network/security')
 
-router.get('/', async function(req, res) {
+router.get('/', checkAuth('logged'), async function(req, res) {
     const { count, page } = req.query
+    const userid = req.headers.tokenDecoded.sub
 
-    controller.list(count, page)
+    controller.list(userid, count, page)
         .then((message) => {
             response.success(req, res, message, 200)
         })
@@ -15,8 +17,10 @@ router.get('/', async function(req, res) {
         })
 });
 
-router.get('/labels', async function(req, res) {
-    controller.listLabels()
+router.get('/labels', checkAuth('logged'), async function(req, res) {
+    const userid = req.headers.tokenDecoded.sub
+    
+    controller.listLabels(userid)
         .then((message) => {
             response.success(req, res, message, 200)
         })
@@ -55,9 +59,10 @@ router.get('/pointer', async function(req, res) {
         })
 });
 
-router.post('/', function(req, res) {
+router.post('/', checkAuth('logged'), function(req, res) {
 
     const dataPuntero = {
+        userid: req.headers.tokenDecoded.sub,
         url: req.body.url,
         title: req.body.title,
         description: req.body.description,
