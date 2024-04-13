@@ -1,28 +1,29 @@
 const auth = require('../auth')
-const error = require('../utils/error')
+const config = require('../config')
+const authController = require('../components/auth/controller')
 
 function checkAuth(action) {
     function middleware(req, res, next) {
         switch(action) {
             case 'admin':
-                if (req.headers['authorization'] !== undefined && req.headers['tokenDecoded'] !== undefined) {
-                    if (req.headers.tokenDecoded.roles.indexOf("admin") !== -1) {
-                        next()
-                        break
-                    } else {
-                        throw error('not authorized', 401, {message: "userid " + req.headers.tokenDecoded.userid + ' NO es administrador'})
-                    }
-                }
-                throw error('not authorized', 401, {message: 'No tiene el header authorization o tokenDecoded'})
-                break;
-            case 'logged':
-                if (req.headers['authorization'] !== undefined && req.headers['tokenDecoded'] !== undefined) {
-                    next()
+                if (!req.headers['tokenDecoded']) {
+                    next({message: 'not authorized', status: 401, details: { message: 'No tiene el header authorization o tokenDecoded', code: 401}})
                     break
                 }
-                throw error ('not authorized', 401, {message:'No tiene el header authorization o tokenDecoded'})
-                //next({message: 'not authorized', code: 401, details: {message:'No tiene el header authorization o tokenDecoded'}})
+                
+                if (req.headers.tokenDecoded.roles.indexOf("admin") === -1) {
+                    next({message: 'not authorized', status: 401, details: { message: "userid " + req.headers.tokenDecoded.sub + ' NO es administrador', code: 401}})
+                    break;
+                }
 
+                next()
+                break;
+            case 'logged':
+                if (!req.headers['tokenDecoded']) {
+                    next({message: 'not authorized', code: 401, details: {message:'No tiene el header authorization o tokenDecoded', code: 401}})
+                    break
+                }
+                next()
                 break
             default:
                 next();
@@ -32,26 +33,32 @@ function checkAuth(action) {
     return middleware;
 }
 
+function getToken(req) {
+    return req.headers.authorization.replace('Bearer', '').trim()
+}
+
 function decodeToken () {
-    return function middleware(req, res, next) {
+    return async function middleware(req, res, next) {
         const authorization = req.headers.authorization || undefined
 
-        // puede venir la palabra Bearer sola
-        let token = ''
-
-        if (authorization)
-            token = authorization.replace('Bearer', '').trim()
-
         try {
-            if (token) req.headers.tokenDecoded = auth.verify(token)
+            if (!authorization) return next()
+
+            let tokens = await authController.getTokens(getToken(req))
+
+            if (!tokens) return next({message: 'not authorized', status: 401, details: {message:'No existe el token', code: 401}})
+
+            req.headers.tokenDecoded = auth.verify(tokens.access)
+
+            next()
         } catch(err) {
-            throw error('Not Authorized', 401, {message: 'fallo la verificacion del token (' + authorization + ') - ' + err.message})
+            next({message: 'not authorized', status: 401, details: {message:'fallo la verificacion del token (' + authorization + ') - ' + err.message, code: 401}})
         }
-        next()
     }
 }
 
 module.exports = {
     checkAuth,
     decodeToken,
+    getToken
 }

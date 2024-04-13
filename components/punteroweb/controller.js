@@ -5,11 +5,11 @@ const nanoid = require('nanoid').customAlphabet(config.model.alphabetIDURL, conf
 
 function addPointer(dataPuntero) {
     return new Promise((resolve, reject) => {
-        if (!dataPuntero.url) return reject('Invalid parameters (url cannot be empty)')
+        if (!dataPuntero.url) return reject({userMessage: 'Invalid parameters (url cannot be empty)'})
 
         dataPuntero.url = dataPuntero.url.toLowerCase().trim()
 
-        if (store.getPointerByURL(dataPuntero.url)) return reject('URL Exists')
+        if (store.getPointerByURL(dataPuntero.url)) return reject({userMessage: 'URL Exists'})
 
 //        const urltest = new URL(dataPuntero.url)
 //        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
@@ -20,6 +20,7 @@ function addPointer(dataPuntero) {
             store.add(dataPuntero)
             resolve({id: dataPuntero.id})
         } catch (e) {
+            e.userMessage = 'Error al agregar Pointer'            
             reject(e)
         }
     })
@@ -28,8 +29,8 @@ function addPointer(dataPuntero) {
 function modifyPointer (dataPointer) {
     return new Promise((resolve, reject) => {
         try {
-            let data = store.info(dataPointer.id)
-            if (!data) return reject({userMessage: 'Pointer not found'})
+            let data = store.info(dataPointer.id)            
+            if (!data || (data.userid !== dataPointer.userid)) return reject({userMessage: 'Pointer not found'})
 
             // si NO existe el llave "x" en el put, le asigno el valor que esta en la base de datos.
             if (!dataPointer.url)           dataPointer.url = data.url
@@ -57,12 +58,13 @@ function infoPointer(id) {
     })
 }
 
-function deletePointer(id) {
+function deletePointer(id, userid) {
     return new Promise((resolve, reject) => {
-        if (!id) return reject('Invalid parameters (id cannot be empty)')
+        if (!id) return reject({userMessage: 'Invalid parameters (id cannot be empty)'})
+        if (!userid) return reject({userMessage: 'Invalid parameters (userid cannot be empty)'})
 
         try {
-            resolve(store.delete(id))
+            resolve(store.delete(id, userid))
         } catch (e) {
             reject(e)
         }
@@ -121,13 +123,20 @@ function listLabels(userid) {
 
 function getPointerByURL (url) {
     return new Promise((resolve, reject) => {
-        if (!url) return reject('Invalid parameters (url cannot be empty)')
+        if (!url) return reject({userMessage: 'Invalid parameters (url cannot be empty)'})
         try {
             resolve(store.getPointerByURL(url))
         } catch (e) {
             reject(e)
         }
     })
+}
+
+function dump() {
+    return new Promise((resolve, reject) => {
+        store.dump()
+        resolve()
+    })    
 }
 
 module.exports = {
@@ -139,5 +148,6 @@ module.exports = {
     info: infoPointer,
     gettitle: titleURL,
     listLabels,
-    getPointerByURL
+    getPointerByURL,
+    dump
 }

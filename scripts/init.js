@@ -9,6 +9,7 @@ const pointer = require('../components/punteroweb/controller')
 async function main () {
 
     let nuevo_puntero, nuevo_usuario
+
     try {
         nuevo_usuario = await user.register({
             username: 'fabricio',
@@ -18,8 +19,6 @@ async function main () {
             password: 'profugos'
             }
         )
-
-        console.log('fabricio:', nuevo_usuario)
 
         nuevo_puntero = await pointer.add({
             url: 'www.google.com.ar',
@@ -40,8 +39,6 @@ async function main () {
             }
         )
 
-        console.log('bruno:', nuevo_usuario)
-
         nuevo_puntero = await pointer.add({
             url: 'www.sega.com',
             title: 'Video Juegos Sega',
@@ -51,8 +48,6 @@ async function main () {
             userid: nuevo_usuario.userid
             }
         )
-
-        console.log('sega:', nuevo_puntero)
 
         nuevo_puntero = await pointer.add({
             url: 'www.nintendo.com',
@@ -64,7 +59,25 @@ async function main () {
             }
         )
 
-        console.log('sega:', nuevo_puntero)
+        nuevo_usuario = await user.register({
+            username: 'lola',
+            email: 'lola.rossi@hotmail.com',
+            name: 'Lola',
+            lastname: 'Rossi',
+            password: 'lola2019'
+            }
+        )
+
+        nuevo_puntero = await pointer.add({
+            url: 'www.bluey.com',
+            title: 'Bluey y su Familia',
+            description: 'Dibujos animados',
+            starts: 5,
+            labels: ["Dibujitos"],
+            userid: nuevo_usuario.userid
+            }
+        )
+
     } catch (err) {
         console.error('Error:', err.userMessage)
     }

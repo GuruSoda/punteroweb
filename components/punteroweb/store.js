@@ -3,7 +3,7 @@ const error = require('../../utils/error')
 
 const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars, userid) values(?, ?, ?, ?, ?, ?)')
 const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=?')
-const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory from puntero where id = ?')
+const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where id = ?')
 const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ?')
 const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where userid=?')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
@@ -11,7 +11,7 @@ const stmtDeletePunteroLabel = Model.prepare('delete from punterolabel where id_
 const stmtIDLabel = Model.prepare('select id from label where label = ?')
 const stmtAddLabel = Model.prepare('insert or ignore INTO label (label, userid) values (?, ?)')
 const stmtAddPunteroLabel = Model.prepare('insert INTO punterolabel (id_puntero, id_label) values (?, ?)')
-const stmtDelete = Model.prepare('delete from puntero where id = ?')
+const stmtDelete = Model.prepare('delete from puntero where id=? and userid=?')
 
 function labels(id) {
     try {
@@ -63,14 +63,13 @@ function addPointer (dataPuntero) {
         // saco el id y pueblo la tabla punterolabel
         for (let label of dataPuntero.labels) {
             let id_label = stmtIDLabel.get(label)
-            console.log('label:', id_label)
             stmtAddPunteroLabel.run(dataPuntero.id, id_label.id)
         }
 
         if (salidaadd.changes > 0) return dataPuntero
     } catch(error) {
         console.log('Error agregando:', error)
-        throw({code: error.code, mensaje: error.message})
+        throw error({code: error.code, mensaje: error.message})
     }
 }
 
@@ -96,9 +95,9 @@ function getPointerByURL(url) {
     }
 }
 
-function deletePointer (id) {
+function deletePointer (id, userid) {
     try {
-        const salida = stmtDelete.run(id)
+        const salida = stmtDelete.run(id, userid)
         if (!salida.changes) throw ('Pointer not found')
     } catch(error) {
         throw({code: error.code, mensaje: error.message})
@@ -168,6 +167,23 @@ function listLabels (userid) {
     }
 }
 
+function dump() {
+    let stmt
+    let out = []
+    
+    stmt = Model.prepare('select * from puntero')
+    out = stmt.all()
+    console.table(out)
+
+    stmt = Model.prepare('select * from label')
+    out = stmt.all()
+    console.table(out)
+
+    stmt = Model.prepare('select * from punterolabel')
+    out = stmt.all()
+    console.table(out)
+}
+
 module.exports = {
     add: addPointer,
     info: infoPointer,
@@ -177,5 +193,6 @@ module.exports = {
     modify: modifyPointer,
     listLabels,
     getPointerByURL,
-    labels
+    labels,
+    dump
 }

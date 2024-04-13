@@ -65,9 +65,17 @@ function deleteUser(userid) {
     })
 }
 
+function dump() {
+    return new Promise((resolve, reject) => {
+        store.dump()
+        resolve()
+    })    
+}
+
 module.exports = {
     getUser: getUser,
     updateUser: updateUser,
     getall: getAllUsers,
     deleteUser: deleteUser,
+    dump: dump
 }

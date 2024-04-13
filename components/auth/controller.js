@@ -1,8 +1,9 @@
 const config = require('../../config')
-const store = require('../../store/userStore')
+const store = require('./store')
 const auth = require('../../auth')
 const bcrypt = require('bcrypt')
 const nanoid = require('nanoid').customAlphabet(config.model.alphabetIDUser, config.model.lengthIDUser)
+const userStore = require('../../store/userStore')
 
 init()
 
@@ -13,10 +14,10 @@ function login(dataLogin) {
 
         let  dataUser = {}
         try {
-            dataUser.userid = store.getUserByEmail(dataLogin.email)
+            dataUser.userid = userStore.getUserByEmail(dataLogin.email)
             if (!dataUser.userid) return reject({userMessage: 'User or Password Incorrect'})
 
-            dataUser.password = store.getUserPassword(dataUser.userid)
+            dataUser.password = userStore.getUserPassword(dataUser.userid)
             if (!dataUser.password) return reject({userMessage: 'User without pass?'})
         } catch (e) {
             return reject({userMessage: 'No autorizado'})
@@ -27,9 +28,12 @@ function login(dataLogin) {
 
             if (result) {
                 delete dataUser.password
-                dataUser = store.getUser(dataUser.userid)
+                dataUser = userStore.getUser(dataUser.userid)
                 dataUser.accessToken = auth.sign({sub: dataUser.userid, roles: dataUser.roles})
                 dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid})
+
+                store.setTokens(dataUser.userid, dataUser.accessToken, dataUser.refreshToken)
+            
                 resolve(dataUser)
             } else {
                 reject({userMessage: 'Email or Password incorrect.'})
@@ -46,18 +50,18 @@ function newUser(dataUser) {
         if (!dataUser.password) return reject({userMessage: 'password is required'})
         if (!dataUser.username) return reject({userMessage: 'username is required'})
 
-        let user = store.getUserByEmail(dataUser.email)
+        let user = userStore.getUserByEmail(dataUser.email)
 
         if (user) return reject({userMessage:'Email ' + dataUser.email + ' Already Exists'})
 
-        if (store.getUserByUserName(dataUser.username)) return reject({userMessage:'UserName ' + dataUser.username + ' Already Exists'})
+        if (userStore.getUserByUserName(dataUser.username)) return reject({userMessage:'UserName ' + dataUser.username + ' Already Exists'})
 
         dataUser.userid = nanoid()
         dataUser.password = await bcrypt.hash(dataUser.password, 5)
 
         try {
-            user = store.add(dataUser)
-            store.addRoleToUser('user', user.userid)
+            user = userStore.add(dataUser)
+            userStore.addRoleToUser('user', user.userid)
             resolve(user)
         } catch (error) {
             error.userMessage = 'Error Creando usuario'
@@ -66,27 +70,39 @@ function newUser(dataUser) {
     })
 }
 
-function logout() {
+function logout(token) {
     return new Promise((resolve, reject) => {
-        resolve('chau!')
+        try {
+            store.deleteTokens(token)
+            resolve('chau!')
+        } catch (e) {
+            reject(e)
+        }
     })
 }
 
-function refreshToken(dataUser) {
+function refreshToken(dataToken) {
     return new Promise((resolve, reject) => {
         try {
-            let user = store.getUser(dataUser.sup)
+            let payloadToken = {}
 
-            if (dataUser.userid) {
-                delete dataUser.password
-                dataUser = store.getUser(dataUser.userid)
-                dataUser.accessToken = auth.sign({sub: dataUser.userid, roles: dataUser.roles})
-                dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid})
-                resolve(dataUser)
-            } else {
-                reject({userMessage: 'Token Incorrect'})
-            }
+            const tokens = store.getTokensByRefreshToken(dataToken.refreshToken)
+
+            if (!tokens) return reject ({userMessage: 'User Not Authorized'})
+
+            payloadToken = auth.verify(tokens.access)
+
+            store.deleteTokens(dataToken.refreshToken)
+
+            let newTokens = {}
+            newTokens.accessToken = auth.sign({sub: payloadToken.sub, roles: payloadToken.roles})
+            newTokens.refreshToken = auth.signRefreshToken({sub: payloadToken.sub})
+
+            store.setTokens(payloadToken.sub, newTokens.accessToken, newTokens.refreshToken)
+
+            resolve(newTokens)
         } catch (e) {
+            e.userMessage = 'Not Authorized'
             reject(e)
         }
     })
@@ -95,15 +111,15 @@ function refreshToken(dataUser) {
 async function init() {
     try {
         // Agrego Roles por default
-        let role = store.getRole('admin')
-        if (!role) store.addRole({name: 'admin', description: 'Role for Administration'})
+        let role = userStore.getRole('admin')
+        if (!role) userStore.addRole({name: 'admin', description: 'Role for Administration'})
         
-        role = store.getRole('user')
-        if (!role) store.addRole({name: 'user', description: 'Role for basic usage'})
+        role = userStore.getRole('user')
+        if (!role) userStore.addRole({name: 'user', description: 'Role for basic usage'})
         
         // Agrego usuario por default si no existe
         let admin = {}
-        let userid = store.getUserByEmail('admin@localhost')
+        let userid = userStore.getUserByEmail('admin@localhost')
         if (!userid) {
             admin = await newUser({
                 email: "admin@localhost",
@@ -114,16 +130,44 @@ async function init() {
             })
 
             // Le asigno al usuario admin que sea administrador
-            store.addRoleToUser('admin', admin.userid)
+            userStore.addRoleToUser('admin', admin.userid)
         }
     } catch (e) {
         console.log('Error on init:', e)
     }
 }
 
+function getTokens(token) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let tokens = await store.getTokens(token)
+            resolve(tokens)
+        } catch (e) {
+            reject(e)
+        }
+    })
+}
+
+function dump() {
+    return new Promise((resolve, reject) => {
+        store.dump()
+        resolve()
+    })    
+}
+
+function deleteAllTokens() {
+    return new Promise((resolve, reject) => {
+        store.deleteAllTokens()
+        resolve()
+    })    
+}
+
 module.exports = {
     login: login,
     logout: logout,
     register: newUser,
-    refreshtoken: refreshToken
+    refreshtoken: refreshToken,
+    getTokens,
+    deleteAllTokens,
+    dump: dump
 }

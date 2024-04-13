@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
+const { getToken, checkAuth} = require('../../network/security')
 
 router.post('/login', function(req, res) {
     dataUser = {}
@@ -19,8 +20,9 @@ router.post('/login', function(req, res) {
         })
 })
 
-router.post('/logout', function(req, res) {
-    controller.logout()
+router.get('/logout', checkAuth('logged'), function(req, res) {
+
+    controller.logout(getToken(req))
         .then((message) => {
             response.success(req, res, message, 200)
         })
@@ -47,16 +49,34 @@ router.post('/register', function(req, res) {
         })
 })
 
-router.post('/refreshtoken', function (req, res) {
+router.post('/refreshtoken', async function (req, res) {
     dataToken = {}
     dataToken.refreshToken = req.body.refreshToken
-    dataToken.accessToken = req.body.accessToken
 
     try {
-        let tokens = controller.refreshtoken(dataToken)
+        let tokens = await controller.refreshtoken(dataToken)
         response.success(req, res, tokens, 201)
     } catch (e) {
-        response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
+        response.error(req, res, e.userMessage, 401, {code: e.code, message: e.message})
+    }
+})
+
+router.get('/dump', checkAuth('logged'), async function (req, res) {
+    try {
+        await controller.dump()
+        response.success(req, res, 'Todo Bien!', 201)
+    } catch (e) {
+        response.error(req, res, e.userMessage, 401, {code: e.code, message: e.message})
+
+    }
+})
+
+router.delete('/deletealltokens', checkAuth('admin'), async function (req, res) {
+    try {
+        await controller.deleteAllTokens()
+        response.success(req, res, 'Todo Bien!', 201)
+    } catch (e) {
+        response.error(req, res, e.userMessage, 401, {code: e.code, message: e.message})
 
     }
 })

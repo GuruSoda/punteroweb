@@ -7,9 +7,11 @@ const config = {
     },
     jwt: {
         secret: process.env.SECRETJWT || 'sssssh-silencio',
+        ageAcces: process.env.AGEACCESSJWT || '1d',
+        ageRefresh: process.env.AGEREFRESHJWT || '30d',
     },
     database: {
-        filedb: process.env.FILEDB  || './database/punteroweb.sqlite',
+        filedb: process.env.FILEDB  || './database/pointerweb.sqlite',
     },
     model: {
         alphabetIDUser: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",

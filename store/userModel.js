@@ -8,7 +8,7 @@ CREATE TABLE if not exists user (\
     name text,\
     lastname text,\
     createdat TIMESTAMP DEFAULT CURRENT_TIMESTAMP\
-);\
+)WITHOUT ROWID;\
 CREATE TABLE if not exists password (\
     userid text unique primary key collate nocase,\
     password text not null collate nocase,\
@@ -26,7 +26,7 @@ CREATE TABLE if not exists user_role (\
     unique(userid, roleid),\
     FOREIGN KEY (userid) REFERENCES user (userid) on delete cascade ON UPDATE NO ACTION,\
     FOREIGN KEY (roleid) REFERENCES role (id) on delete cascade ON UPDATE NO ACTION\
-)";
+);";
 
 db.exec(puntero)
 

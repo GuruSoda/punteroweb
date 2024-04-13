@@ -21,6 +21,7 @@ const stmtGetRole = userModel.prepare('select id, name, description from role wh
 const stmtGetRoles = userModel.prepare('select id, name, description from role')
 const stmtAddUserRole = userModel.prepare('insert or ignore into user_role (userid, roleid) values (?, ?)')
 const stmtGetRolesUser = userModel.prepare('select r.id, r.name, r.description from role r, user_role ur, user u where r.id = ur.roleid and u.userid = ur.userid and u.email == ?')
+//
 
 function addUser (dataUser) {
 
@@ -228,6 +229,27 @@ function userToObject(recordUser) {
     }
 }
 
+function dump() {
+    let stmt
+    let out = []
+    
+    stmt = userModel.prepare('select * from user')
+    out = stmt.all()
+    console.table(out)
+
+    stmt = userModel.prepare('select * from password')
+    out = stmt.all()
+    console.table(out)
+
+    stmt = userModel.prepare('select * from role')
+    out = stmt.all()
+    console.table(out)
+
+    stmt = userModel.prepare('select * from user_role')
+    out = stmt.all()
+    console.table(out)
+}
+
 module.exports = {
     add: addUser,
     deleteUser: deleteUser,
@@ -244,4 +266,5 @@ module.exports = {
     getListRoles: getListRoles,
     getRolesUser: getRolesUser,
     updateRolesUser: updateRolesUser,
+    dump: dump
 }

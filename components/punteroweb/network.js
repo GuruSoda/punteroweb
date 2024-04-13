@@ -3,6 +3,7 @@ const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
+const userController = require('../user/controller')
 
 router.get('/', checkAuth('logged'), async function(req, res) {
     const { count, page } = req.query
@@ -19,7 +20,7 @@ router.get('/', checkAuth('logged'), async function(req, res) {
 
 router.get('/labels', checkAuth('logged'), async function(req, res) {
     const userid = req.headers.tokenDecoded.sub
-    
+
     controller.listLabels(userid)
         .then((message) => {
             response.success(req, res, message, 200)
@@ -29,7 +30,7 @@ router.get('/labels', checkAuth('logged'), async function(req, res) {
         })
 });
 
-router.get('/count', async function(req, res) {
+router.get('/count', checkAuth('logged'), async function(req, res) {
     controller.count()
         .then((message) => {
             response.success(req, res, message, 200)
@@ -39,7 +40,7 @@ router.get('/count', async function(req, res) {
         })
 });
 
-router.get('/title', async function(req, res) {
+router.get('/title', checkAuth('logged'), async function(req, res) {
     controller.gettitle(req.query.url)
         .then((message) => {
             response.success(req, res, message, 200)
@@ -59,6 +60,14 @@ router.get('/pointer', async function(req, res) {
         })
 });
 
+router.get('/dump', checkAuth('admin'), async function(req, res) {
+    try {
+        response.success(req, res, await controller.dump(), 200)
+    } catch (e) {
+        response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
+    }
+});
+
 router.post('/', checkAuth('logged'), function(req, res) {
 
     const dataPuntero = {
@@ -75,12 +84,11 @@ router.post('/', checkAuth('logged'), function(req, res) {
             response.success(req, res, message, 201)
         })
         .catch(e => {
-            e.userMessage = "Error agregando puntero"
-            response.error(req, res, e, 500, e)
+            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
         })
 })
 
-router.get('/:id', async function(req, res) {
+router.get('/:id', checkAuth('logged'), async function(req, res) {
     controller.info(req.params.id)
         .then((message) => {
             response.success(req, res, message, 200)
@@ -91,11 +99,12 @@ router.get('/:id', async function(req, res) {
         })
 });
 
-router.put('/:id', async function(req, res) {
+router.put('/:id', checkAuth('logged'), async function(req, res) {
 
     dataPointer = {}
 
     dataPointer.id = req.params.id
+    dataPointer.userid = req.headers.tokenDecoded.sub
     dataPointer.url = req.body.url
     dataPointer.title = req.body.title
     dataPointer.description = req.body.description
@@ -112,8 +121,8 @@ router.put('/:id', async function(req, res) {
         })
 });
 
-router.delete('/:id', async function(req, res) {
-    controller.delete(req.params.id)
+router.delete('/:id', checkAuth('logged'), async function(req, res) {
+    controller.delete(req.params.id, req.headers.tokenDecoded.sub)
         .then((message) => {
             response.success(req, res, message, 200)
         })
