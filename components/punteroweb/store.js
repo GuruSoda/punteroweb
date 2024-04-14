@@ -25,7 +25,7 @@ function labels(id) {
         }
 
         return labels
-    } catch(error) {
+    } catch(e) {
         return []
     }
 }
@@ -46,14 +46,13 @@ function punteroToObject(url) {
             registro.labels = labels(salida.id)
         }
         return registro
-    } catch(error) {
-        throw {code: error.code, mensaje: error.message}
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 
 function addPointer (dataPuntero) {
     try {
-        console.log('dataPuntero:', dataPuntero)
         // Agrego las etiquetas, existan o no.
         for (let label of dataPuntero.labels) stmtAddLabel.run(label, dataPuntero.userid)
 
@@ -67,9 +66,8 @@ function addPointer (dataPuntero) {
         }
 
         if (salidaadd.changes > 0) return dataPuntero
-    } catch(error) {
-        console.log('Error agregando:', error)
-        throw error({code: error.code, mensaje: error.message})
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -81,8 +79,8 @@ function infoPointer(id) {
         
         registro.labels = labels(id)
         return registro
-    } catch(error) {
-        throw({code: error.code, mensaje: error.message, userMessage: error.userMessage || ''})
+    } catch(e) {
+        throw error(error.message, e.code)
     }
 }
 
@@ -90,17 +88,17 @@ function getPointerByURL(url) {
     try {
         let pointer = stmtGetPointerByURL.get(url)
         return pointer
-    } catch (error) {
-        throw({code: error.code, mensaje: error.message})
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
 function deletePointer (id, userid) {
     try {
         const salida = stmtDelete.run(id, userid)
-        if (!salida.changes) throw ('Pointer not found')
-    } catch(error) {
-        throw({code: error.code, mensaje: error.message})
+         return (salida.changes === 0) ? false : true
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -109,7 +107,7 @@ function modifyPointer(dataPointer) {
         const salida = stmtUpdate.run(dataPointer.url, dataPointer.title, dataPointer.description, dataPointer.stars, dataPointer.directory, dataPointer.id)
 
         // Agrego las etiquetas, existan o no.
-        for (let label of dataPointer.labels) stmtAddLabel.run(label)
+        for (let label of dataPointer.labels) stmtAddLabel.run(label, dataPointer.userid)
 
         // Borro las etiquetas del puntero
         stmtDeletePunteroLabel.run(dataPointer.id)
@@ -121,8 +119,8 @@ function modifyPointer(dataPointer) {
         }
 
         return dataPointer
-    } catch(error) {
-        throw({code: error.code, mensaje: error.message})
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -135,12 +133,13 @@ function listPointers (userid, count, page) {
 
         for (let pointer of salida) {
             pointer.labels = labels(pointer.id)
+            delete pointer.userid
             punteros.push(pointer)
         }
 
         return punteros
-    } catch(error) {
-        throw({code: error.code, mensaje: error.message})
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -162,8 +161,8 @@ function listLabels (userid) {
         });
 
         return labels
-    } catch(error) {
-        throw({code: error.code, mensaje: error.message})
+    } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 

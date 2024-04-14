@@ -117,7 +117,7 @@ router.put('/:id', checkAuth('logged'), async function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
+            response.error(req, res, 'No se pudo modificar el puntero', 400, {code: e.code, message: e.message})
         })
 });
 
@@ -127,8 +127,7 @@ router.delete('/:id', checkAuth('logged'), async function(req, res) {
             response.success(req, res, message, 200)
         })
         .catch(e => {
-            if (e.error) response.error(req, res, 'Error borrando puntero', 500, e)
-            else response.error(req, res, 'Puntero not found', 404, e)
+            response.error(req, res, e.userMessage || 'Error borrando puntero', 404, {code: e.code, message: e.message})
         })
 });
 

@@ -64,7 +64,8 @@ function deletePointer(id, userid) {
         if (!userid) return reject({userMessage: 'Invalid parameters (userid cannot be empty)'})
 
         try {
-            resolve(store.delete(id, userid))
+            if (store.delete(id, userid)) resolve('Puntero Borrado')
+            else reject({userMessage: 'Puntero NO Encontrado'})
         } catch (e) {
             reject(e)
         }
