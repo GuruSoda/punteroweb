@@ -2,8 +2,8 @@ const Model = require('./model')
 const error = require('../../utils/error')
 
 const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars, userid) values(?, ?, ?, ?, ?, ?)')
-const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=?')
-const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where id = ?')
+const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=? and userid=?')
+const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where id = ? and userid=?')
 const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ?')
 const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where userid=?')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
@@ -71,9 +71,9 @@ function addPointer (dataPuntero) {
     }
 }
 
-function infoPointer(id) {
+function infoPointer(id, userid) {
     try {
-        let registro = stmtInfo.get(id)
+        let registro = stmtInfo.get(id, userid)
 
         if (!registro) return undefined
         
@@ -104,7 +104,7 @@ function deletePointer (id, userid) {
 
 function modifyPointer(dataPointer) {
     try {
-        const salida = stmtUpdate.run(dataPointer.url, dataPointer.title, dataPointer.description, dataPointer.stars, dataPointer.directory, dataPointer.id)
+        const salida = stmtUpdate.run(dataPointer.url, dataPointer.title, dataPointer.description, dataPointer.stars, dataPointer.directory, dataPointer.id, dataPointer.userid)
 
         // Agrego las etiquetas, existan o no.
         for (let label of dataPointer.labels) stmtAddLabel.run(label, dataPointer.userid)

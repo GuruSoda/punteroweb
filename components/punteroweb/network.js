@@ -68,7 +68,7 @@ router.get('/dump', checkAuth('admin'), async function(req, res) {
     }
 });
 
-router.post('/', checkAuth('logged'), function(req, res) {
+router.post('/', checkAuth('logged'), function(req, res, next) {
 
     const dataPuntero = {
         userid: req.headers.tokenDecoded.sub,
@@ -83,13 +83,12 @@ router.post('/', checkAuth('logged'), function(req, res) {
         .then((message) => {
             response.success(req, res, message, 201)
         })
-        .catch(e => {
-            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
-        })
+        .catch(next)
+//        .catch(e => { response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message}) })
 })
 
 router.get('/:id', checkAuth('logged'), async function(req, res) {
-    controller.info(req.params.id)
+    controller.info(req.params.id, req.headers.tokenDecoded.sub)
         .then((message) => {
             response.success(req, res, message, 200)
         })

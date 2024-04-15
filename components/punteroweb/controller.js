@@ -5,11 +5,11 @@ const nanoid = require('nanoid').customAlphabet(config.model.alphabetIDURL, conf
 
 function addPointer(dataPuntero) {
     return new Promise((resolve, reject) => {
-        if (!dataPuntero.url) return reject({userMessage: 'Invalid parameters (url cannot be empty)'})
+        if (!dataPuntero.url) return reject({message: 'Invalid parameters (url cannot be empty)', status: 400})
 
         dataPuntero.url = dataPuntero.url.toLowerCase().trim()
 
-        if (store.getPointerByURL(dataPuntero.url)) return reject({userMessage: 'URL Exists'})
+        if (store.getPointerByURL(dataPuntero.url)) return reject({message: 'URL Exists', status: 404, details: {message: `Ya existe la URL ${dataPuntero.url}`}})
 
 //        const urltest = new URL(dataPuntero.url)
 //        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
@@ -20,8 +20,11 @@ function addPointer(dataPuntero) {
             store.add(dataPuntero)
             resolve({id: dataPuntero.id})
         } catch (e) {
-            e.userMessage = 'Error al agregar Pointer'            
-            reject(e)
+            reject({
+                message: 'Error al agregar Pointer',
+                status: 500,
+                details: e
+            })
         }
     })
 }
@@ -29,8 +32,8 @@ function addPointer(dataPuntero) {
 function modifyPointer (dataPointer) {
     return new Promise((resolve, reject) => {
         try {
-            let data = store.info(dataPointer.id)            
-            if (!data || (data.userid !== dataPointer.userid)) return reject({userMessage: 'Pointer not found'})
+            let data = store.info(dataPointer.id, dataPointer.userid)
+            if (!data) return reject({userMessage: 'Pointer not found'})
 
             // si NO existe el llave "x" en el put, le asigno el valor que esta en la base de datos.
             if (!dataPointer.url)           dataPointer.url = data.url
@@ -51,7 +54,7 @@ function modifyPointer (dataPointer) {
 function infoPointer(id) {
     return new Promise((resolve, reject) => {
         try {
-            resolve(store.info(id))
+            resolve(store.info(id, userid))
         } catch (e) {
             reject(e)
         }
