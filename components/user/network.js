@@ -9,9 +9,7 @@ router.get('/dump', checkAuth('admin'), function(req, res) {
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
-        })
+        .catch(next)
 })
 
 router.get('/', checkAuth('admin'), function(req, res) {

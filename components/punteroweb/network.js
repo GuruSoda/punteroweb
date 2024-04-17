@@ -3,9 +3,8 @@ const router = express.Router()
 const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
-const userController = require('../user/controller')
 
-router.get('/', checkAuth('logged'), async function(req, res) {
+router.get('/', checkAuth('logged'), function(req, res, next) {
     const { count, page } = req.query
     const userid = req.headers.tokenDecoded.sub
 
@@ -13,59 +12,49 @@ router.get('/', checkAuth('logged'), async function(req, res) {
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, 'Error listando Punteros', 500, e)
-        })
+        .catch(next)
 });
 
-router.get('/labels', checkAuth('logged'), async function(req, res) {
+router.get('/labels', checkAuth('logged'), function(req, res, next) {
     const userid = req.headers.tokenDecoded.sub
 
     controller.listLabels(userid)
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, 'Error listando Punteros', 500, e)
-        })
+        .catch(next)
 });
 
-router.get('/count', checkAuth('logged'), async function(req, res) {
+router.get('/count', checkAuth('logged'), function(req, res, next) {
     controller.count()
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, 'Error contando Punteros', 500, e)
-        })
+        .catch(next)
 });
 
-router.get('/title', checkAuth('logged'), async function(req, res) {
+router.get('/title', checkAuth('logged'), function(req, res, next) {
     controller.gettitle(req.query.url)
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, e, 500, e)
-        })
+        .catch(next)
 });
 
-router.get('/pointer', async function(req, res) {
+router.get('/pointer', function(req, res, next) {
     controller.getPointerByURL(req.query.url)
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, e, 500, e)
-        })
+        .catch(next)
 });
 
-router.get('/dump', checkAuth('admin'), async function(req, res) {
-    try {
-        response.success(req, res, await controller.dump(), 200)
-    } catch (e) {
-        response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message})
-    }
+router.get('/dump', checkAuth('admin'), function(req, res, next) {
+    controller.dump()
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(next)
 });
 
 router.post('/', checkAuth('logged'), function(req, res, next) {
@@ -84,21 +73,17 @@ router.post('/', checkAuth('logged'), function(req, res, next) {
             response.success(req, res, message, 201)
         })
         .catch(next)
-//        .catch(e => { response.error(req, res, e.userMessage, 500, {code: e.code, message: e.message}) })
 })
 
-router.get('/:id', checkAuth('logged'), async function(req, res) {
+router.get('/:id', checkAuth('logged'), function(req, res, next) {
     controller.info(req.params.id, req.headers.tokenDecoded.sub)
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            if (e.error) response.error(req, res, 'Error tomando info', 500, e)
-            else response.error(req, res, 'URL not found', 404, e)
-        })
+        .catch(next)
 });
 
-router.put('/:id', checkAuth('logged'), async function(req, res) {
+router.put('/:id', checkAuth('logged'), function(req, res, next) {
 
     dataPointer = {}
 
@@ -115,19 +100,15 @@ router.put('/:id', checkAuth('logged'), async function(req, res) {
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, 'No se pudo modificar el puntero', 400, {code: e.code, message: e.message})
-        })
+        .catch(next)
 });
 
-router.delete('/:id', checkAuth('logged'), async function(req, res) {
+router.delete('/:id', checkAuth('logged'), function(req, res, next) {
     controller.delete(req.params.id, req.headers.tokenDecoded.sub)
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, e.userMessage || 'Error borrando puntero', 404, {code: e.code, message: e.message})
-        })
+        .catch(next)
 });
 
 module.exports = router

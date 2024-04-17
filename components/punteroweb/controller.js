@@ -21,7 +21,7 @@ function addPointer(dataPuntero) {
             resolve({id: dataPuntero.id})
         } catch (e) {
             reject({
-                message: 'Error al agregar Pointer',
+                message: 'Error al agregar Puntero',
                 status: 500,
                 details: e
             })
@@ -33,7 +33,7 @@ function modifyPointer (dataPointer) {
     return new Promise((resolve, reject) => {
         try {
             let data = store.info(dataPointer.id, dataPointer.userid)
-            if (!data) return reject({userMessage: 'Pointer not found'})
+            if (!data) return reject({message: 'Pointer not found', statu: 400})
 
             // si NO existe el llave "x" en el put, le asigno el valor que esta en la base de datos.
             if (!dataPointer.url)           dataPointer.url = data.url
@@ -46,7 +46,10 @@ function modifyPointer (dataPointer) {
             data = store.modify(dataPointer)
             resolve(data)
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error al modificar puntero',
+                details: e
+            })
         }
     })
 }
@@ -54,23 +57,31 @@ function modifyPointer (dataPointer) {
 function infoPointer(id) {
     return new Promise((resolve, reject) => {
         try {
-            resolve(store.info(id, userid))
+            const pointer = store.info(id, userid)
+            if (!pointer) return reject({message: 'Pointer not found', statu: 400})
+            resolve(pointer)
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error obteniendo puntero',
+                details: e
+            })
         }
     })
 }
 
 function deletePointer(id, userid) {
     return new Promise((resolve, reject) => {
-        if (!id) return reject({userMessage: 'Invalid parameters (id cannot be empty)'})
-        if (!userid) return reject({userMessage: 'Invalid parameters (userid cannot be empty)'})
+        if (!id) return reject({message: 'Invalid parameters (id cannot be empty)', status: 400})
+        if (!userid) return reject({message: 'Invalid parameters (userid cannot be empty)', status: 400})
 
         try {
             if (store.delete(id, userid)) resolve('Puntero Borrado')
-            else reject({userMessage: 'Puntero NO Encontrado'})
+            else reject({message: 'Puntero NO Encontrado', status: 400})
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error borrando puntero',
+                details: e
+            })
         }
     })
 }
@@ -84,7 +95,10 @@ function listPointers(userid, count, page) {
         try {
             resolve(store.list(userid, count, page))
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error listando punteros',
+                details: e
+            })
         }
     })
 }
@@ -94,7 +108,10 @@ function countPointers() {
         try {
             resolve(store.count())
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error contando punteros',
+                details: e
+            })
         }
     })
 }
@@ -110,7 +127,10 @@ function titleURL(url) {
             const titulo = utilsweb.title(url)
             resolve(titulo)
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error solicitando titulo de URL',
+                details: e
+            })
         }
     })
 }
@@ -120,14 +140,17 @@ function listLabels(userid) {
         try {
             resolve(store.listLabels(userid))
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error listando etiquetas',
+                details: e
+            })
         }
     })
 }
 
 function getPointerByURL (url) {
     return new Promise((resolve, reject) => {
-        if (!url) return reject({userMessage: 'Invalid parameters (url cannot be empty)'})
+        if (!url) return reject({message: 'Invalid parameters (url cannot be empty)'})
         try {
             resolve(store.getPointerByURL(url))
         } catch (e) {
@@ -138,8 +161,16 @@ function getPointerByURL (url) {
 
 function dump() {
     return new Promise((resolve, reject) => {
-        store.dump()
-        resolve()
+        try {
+            store.dump()
+            resolve('Dump!')
+        } catch (e) {
+            reject({
+                message: 'Error haciendo Dump',
+                details: e
+            })
+        }
+
     })    
 }
 

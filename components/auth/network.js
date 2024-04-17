@@ -4,7 +4,7 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { getToken, checkAuth} = require('../../network/security')
 
-router.post('/login', function(req, res) {
+router.post('/login', function(req, res, next) {
     dataUser = {}
 
     dataUser.email = req.body.email
@@ -15,12 +15,10 @@ router.post('/login', function(req, res) {
         .then((message) => {
             response.success(req, res, message, 200)
         })
-        .catch(e => {
-            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
-        })
+        .catch(next)
 })
 
-router.get('/logout', checkAuth('logged'), function(req, res) {
+router.get('/logout', checkAuth('logged'), function(req, res, next) {
 
     controller.logout(getToken(req))
         .then((message) => {
@@ -31,7 +29,7 @@ router.get('/logout', checkAuth('logged'), function(req, res) {
         })
 })
 
-router.post('/register', function(req, res) {
+router.post('/register', function(req, res, next) {
     dataUser = {}
 
     dataUser.username = req.body.username
@@ -44,12 +42,10 @@ router.post('/register', function(req, res) {
         .then((message) => {
             response.success(req, res, message, 201)
         })
-        .catch(e => {
-            response.error(req, res, e.userMessage, 400, {code: e.code, message: e.message})
-        })
+        .catch(next)
 })
 
-router.post('/refreshtoken', async function (req, res) {
+router.post('/refreshtoken', async function (req, res, next) {
     dataToken = {}
     dataToken.refreshToken = req.body.refreshToken
 
@@ -61,23 +57,21 @@ router.post('/refreshtoken', async function (req, res) {
     }
 })
 
-router.get('/dump', checkAuth('logged'), async function (req, res) {
+router.get('/dump', checkAuth('logged'), async function (req, res, next) {
     try {
         await controller.dump()
         response.success(req, res, 'Todo Bien!', 201)
     } catch (e) {
         response.error(req, res, e.userMessage, 401, {code: e.code, message: e.message})
-
     }
 })
 
-router.delete('/deletealltokens', checkAuth('admin'), async function (req, res) {
+router.delete('/deletealltokens', checkAuth('admin'), async function (req, res, next) {
     try {
         await controller.deleteAllTokens()
         response.success(req, res, 'Todo Bien!', 201)
     } catch (e) {
         response.error(req, res, e.userMessage, 401, {code: e.code, message: e.message})
-
     }
 })
 

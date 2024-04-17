@@ -1,5 +1,4 @@
 const auth = require('../auth')
-const config = require('../config')
 const authController = require('../components/auth/controller')
 
 function checkAuth(action) {
@@ -12,7 +11,7 @@ function checkAuth(action) {
                 }
                 
                 if (req.headers.tokenDecoded.roles.indexOf("admin") === -1) {
-                    next({message: 'not authorized', status: 401, details: { message: "userid " + req.headers.tokenDecoded.sub + ' NO es administrador', code: 401}})
+                    next({message: 'not authorized', status: 403, details: { message: "userid " + req.headers.tokenDecoded.sub + ' NO es administrador', code: 403}})
                     break;
                 }
 

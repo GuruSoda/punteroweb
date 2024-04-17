@@ -9,18 +9,21 @@ init()
 
 function login(dataLogin) {
     return new Promise(async (resolve, reject) => {
-        if (!dataLogin.email) return reject({userMessage: 'email is required'})
-        if (!dataLogin.password) return reject({userMessage: 'password is required'})
+        if (!dataLogin.email) return reject({message: 'email is required', status: 400})
+        if (!dataLogin.password) return reject({message: 'password is required', status: 400})
 
         let  dataUser = {}
         try {
             dataUser.userid = userStore.getUserByEmail(dataLogin.email)
-            if (!dataUser.userid) return reject({userMessage: 'User or Password Incorrect'})
+            if (!dataUser.userid) return reject({message: 'User or Password Incorrect', status: 400})
 
             dataUser.password = userStore.getUserPassword(dataUser.userid)
-            if (!dataUser.password) return reject({userMessage: 'User without pass?'})
+            if (!dataUser.password) return reject({message: 'User without pass?', status: 400})
         } catch (e) {
-            return reject({userMessage: 'No autorizado'})
+            return reject({
+                message: 'Login Error',
+                details: e
+            })
         }
 
         try {
@@ -36,36 +39,43 @@ function login(dataLogin) {
             
                 resolve(dataUser)
             } else {
-                reject({userMessage: 'Email or Password incorrect.'})
+                reject({message: 'Email or Password incorrect.', status: 400})
             }
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Login Error',
+                details: e
+            })
         }
     })
 }
 
 function newUser(dataUser) {
     return new Promise(async (resolve, reject) => {
-        if (!dataUser.email) return reject({userMessage: 'email is required'})
-        if (!dataUser.password) return reject({userMessage: 'password is required'})
-        if (!dataUser.username) return reject({userMessage: 'username is required'})
-
-        let user = userStore.getUserByEmail(dataUser.email)
-
-        if (user) return reject({userMessage:'Email ' + dataUser.email + ' Already Exists'})
-
-        if (userStore.getUserByUserName(dataUser.username)) return reject({userMessage:'UserName ' + dataUser.username + ' Already Exists'})
-
-        dataUser.userid = nanoid()
-        dataUser.password = await bcrypt.hash(dataUser.password, 5)
-
         try {
+            if (!dataUser.email) return reject({message: 'email is required', status: 400})
+            if (!dataUser.password) return reject({message: 'password is required', status: 400})
+            if (!dataUser.username) return reject({message: 'username is required', status: 400})
+
+            let user = userStore.getUserByEmail(dataUser.email)
+
+            if (user) return reject({message:'Email ' + dataUser.email + ' Already Exists', status: 400})
+
+            console.log('aca!', user)
+
+            if (userStore.getUserByUserName(dataUser.username)) return reject({message:'UserName ' + dataUser.username + ' Already Exists', status: 400})
+
+            dataUser.userid = nanoid()
+            dataUser.password = await bcrypt.hash(dataUser.password, 5)
+
             user = userStore.add(dataUser)
             userStore.addRoleToUser('user', user.userid)
             resolve(user)
-        } catch (error) {
-            error.userMessage = 'Error Creando usuario'
-            reject(error)
+        } catch (e) {
+            reject({
+                message: 'Login Error',
+                details: e
+            })
         }
     })
 }
@@ -74,9 +84,12 @@ function logout(token) {
     return new Promise((resolve, reject) => {
         try {
             store.deleteTokens(token)
-            resolve('chau!')
+            resolve('By!')
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Not Authorized',
+                details: e
+            })
         }
     })
 }
@@ -88,7 +101,7 @@ function refreshToken(dataToken) {
 
             const tokens = store.getTokensByRefreshToken(dataToken.refreshToken)
 
-            if (!tokens) return reject ({userMessage: 'User Not Authorized'})
+            if (!tokens) return reject ({message: 'User Not Authorized'})
 
             payloadToken = auth.verify(tokens.access)
 
@@ -102,8 +115,10 @@ function refreshToken(dataToken) {
 
             resolve(newTokens)
         } catch (e) {
-            e.userMessage = 'Not Authorized'
-            reject(e)
+            reject({
+                message: 'Not Authorized',
+                details: e
+            })
         }
     })
 }
@@ -143,7 +158,10 @@ function getTokens(token) {
             let tokens = await store.getTokens(token)
             resolve(tokens)
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Cannot get tokens',
+                details: e
+            })
         }
     })
 }

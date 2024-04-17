@@ -96,7 +96,7 @@ function getPointerByURL(url) {
 function deletePointer (id, userid) {
     try {
         const salida = stmtDelete.run(id, userid)
-         return (salida.changes === 0) ? false : true
+        return (salida.changes === 0) ? false : true
     } catch(e) {
         throw error(e.message, e.code)
     }
@@ -144,10 +144,14 @@ function listPointers (userid, count, page) {
 }
 
 function countPointers (dataFile) {
-    Model.all('select count(id) as total from file', (err, rows) => {
-        if (err) reject (err)
-        else resolve(rows[0].total)
-    })
+    try {
+        const stmtCountPointers = Model.prepare('select count(id) as total from puntero')
+        const salida = stmtCountPointers.get()
+        if (salida) return salida.total
+        else return -1
+    } catch (e) {
+        throw error(e.message, e.code)
+    }
 }
 
 function listLabels (userid) {
