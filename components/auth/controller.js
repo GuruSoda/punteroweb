@@ -61,8 +61,6 @@ function newUser(dataUser) {
 
             if (user) return reject({message:'Email ' + dataUser.email + ' Already Exists', status: 400})
 
-            console.log('aca!', user)
-
             if (userStore.getUserByUserName(dataUser.username)) return reject({message:'UserName ' + dataUser.username + ' Already Exists', status: 400})
 
             dataUser.userid = nanoid()
@@ -177,7 +175,28 @@ function deleteAllTokens() {
     return new Promise((resolve, reject) => {
         store.deleteAllTokens()
         resolve()
-    })    
+    })
+}
+
+function changepassword(datapass) {
+    return new Promise(async (resolve, reject) => {
+        try{
+            let password = await userStore.getUserPassword(datapass.userid)
+
+            await bcrypt.compare(datapass.oldpassword, password)
+
+            password = await bcrypt.hash(datapass.newpassword, 5)
+
+            await userStore.setUserPassword(datapass.userid, password)
+
+            resolve('Password Changed')
+        } catch (e) {
+            reject({
+                message: 'Error Updating Password',
+                details: e
+            })
+        }
+    })
 }
 
 module.exports = {
@@ -187,5 +206,6 @@ module.exports = {
     refreshtoken: refreshToken,
     getTokens,
     deleteAllTokens,
+    changepassword,
     dump: dump
 }

@@ -75,4 +75,19 @@ router.delete('/deletealltokens', checkAuth('admin'), async function (req, res, 
     }
 })
 
+router.put('/changepassword', checkAuth('logged'), function (req, res, next) {
+
+    dataUser = {}
+
+    dataUser.oldpassword = req.body.oldpassword
+    dataUser.newpassword = req.body.newpassword
+    dataUser.userid = req.headers.tokenDecoded.sub
+
+    controller.changepassword(dataUser)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(next)
+})
+
 module.exports = router

@@ -6,6 +6,7 @@ const stmtDeleteUser = userModel.prepare('delete from user where userid = ?')
 const stmtAddPassword = userModel.prepare('insert into password(userid, password) values(?, ?)')
 const stmtDeletePassword = userModel.prepare('delete from password where userid = ?')
 const stmtGetUserPassword = userModel.prepare('select password from password where userid = ?')
+const stmtSetUserPassword = userModel.prepare('update password set password=? where userid=?')
 const stmtUpdateUser = userModel.prepare('update user set username=?, name=?, lastname=?, email=? where userid=?')
 const stmtGetUserByEmail = userModel.prepare('select userid from user where email = ?')
 const stmtGetUserByUserID = userModel.prepare('select email from user where userid = ?')
@@ -105,6 +106,15 @@ function getUserPassword(userid) {
         } catch (error) {
             throw userError(error.message, error.code)
         }
+}
+
+function setUserPassword (userid, password) {
+    try {
+        let pass = stmtSetUserPassword.run(password, userid)
+        return (pass) ? true : false
+    } catch (error) {
+        throw userError(error.message, error.code)
+    }
 }
 
 function getUserByEmail(email) {
@@ -257,6 +267,7 @@ module.exports = {
     list: listUsers,
     getUser: getUser,
     getUserPassword: getUserPassword,
+    setUserPassword: setUserPassword,
     getUserByEmail: getUserByEmail,
     getUserByUserID: getUserByUserID,
     getUserByUserName: getUserByUserName,
