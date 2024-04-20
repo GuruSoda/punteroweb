@@ -18,6 +18,12 @@ const config = {
         alphabetIDURL: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
         lengthIDUser: 21,
         lengthIDURL: 30
+    },
+    smtp: {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
     }
 }
 
