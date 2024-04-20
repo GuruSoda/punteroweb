@@ -64,7 +64,7 @@ router.post('/', checkAuth('logged'), function(req, res, next) {
         url: req.body.url,
         title: req.body.title,
         description: req.body.description,
-        starts: req.body.starts,
+        stars: req.body.stars,
         labels: req.body.labels
     }
 

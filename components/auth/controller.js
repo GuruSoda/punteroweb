@@ -174,11 +174,32 @@ function dump() {
 function deleteAllTokens() {
     return new Promise((resolve, reject) => {
         store.deleteAllTokens()
-        resolve()
+        resolve('All Tokens Deleted')
     })
 }
 
 function changepassword(datapass) {
+    return new Promise(async (resolve, reject) => {
+        try{
+            let password = await userStore.getUserPassword(datapass.userid)
+
+            await bcrypt.compare(datapass.oldpassword, password)
+
+            password = await bcrypt.hash(datapass.newpassword, 5)
+
+            await userStore.setUserPassword(datapass.userid, password)
+
+            resolve('Password Changed')
+        } catch (e) {
+            reject({
+                message: 'Error Updating Password',
+                details: e
+            })
+        }
+    })
+}
+
+function resetpassword() {
     return new Promise(async (resolve, reject) => {
         try{
             let password = await userStore.getUserPassword(datapass.userid)
@@ -207,5 +228,6 @@ module.exports = {
     getTokens,
     deleteAllTokens,
     changepassword,
+    resetpassword,
     dump: dump
 }

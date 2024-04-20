@@ -57,7 +57,7 @@ function addPointer (dataPuntero) {
         for (let label of dataPuntero.labels) stmtAddLabel.run(label, dataPuntero.userid)
 
         // Agrego el puntero
-        const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.starts, dataPuntero.userid)
+        const salidaadd = stmtAdd.run(dataPuntero.id, dataPuntero.url, dataPuntero.title, dataPuntero.description, dataPuntero.stars, dataPuntero.userid)
 
         // saco el id y pueblo la tabla punterolabel
         for (let label of dataPuntero.labels) {
