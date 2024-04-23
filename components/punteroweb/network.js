@@ -26,7 +26,8 @@ router.get('/labels', checkAuth('logged'), function(req, res, next) {
 });
 
 router.get('/count', checkAuth('logged'), function(req, res, next) {
-    controller.count()
+    const userid = req.headers.tokenDecoded.sub
+    controller.count(userid)
         .then((message) => {
             response.success(req, res, message, 200)
         })

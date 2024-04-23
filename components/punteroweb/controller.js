@@ -103,10 +103,13 @@ function listPointers(userid, count, page) {
     })
 }
 
-function countPointers() {
+function countPointers(userid) {
     return new Promise((resolve, reject) => {
         try {
-            resolve(store.count())
+            const countPointers = store.count(userid)
+            const countLabels = store.countLabels(userid)
+
+            resolve({pointers: countPointers, labels: countLabels})
         } catch (e) {
             reject({
                 message: 'Error contando punteros',
@@ -150,9 +153,11 @@ function listLabels(userid) {
 
 function getPointerByURL (url) {
     return new Promise((resolve, reject) => {
-        if (!url) return reject({message: 'Invalid parameters (url cannot be empty)'})
+        if (!url) return reject({message: 'Invalid parameters (url cannot be empty)', status: 400})
         try {
-            resolve(store.getPointerByURL(url))
+            const infoURL = store.getPointerByURL(url)
+            if (infoURL) resolve(infoURL)
+            else reject({message: 'URL Not Found', status: 404})
         } catch (e) {
             reject(e)
         }
