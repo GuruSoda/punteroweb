@@ -9,7 +9,7 @@ function addPointer(dataPuntero) {
 
         dataPuntero.url = dataPuntero.url.toLowerCase().trim()
 
-        if (store.getPointerByURL(dataPuntero.url)) return reject({message: 'URL Exists', status: 400, details: {message: `Ya existe la URL ${dataPuntero.url}`}})
+        if (store.getPointerByURL(dataPuntero.url, dataPuntero.userid)) return reject({message: 'URL Exists', status: 400, details: {message: `Ya existe la URL ${dataPuntero.url}`}})
 
 //        const urltest = new URL(dataPuntero.url)
 //        if (!urltest.protocol) reject('URL must be have a protocol (http, https, etc...)')
