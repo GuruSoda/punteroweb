@@ -1,0 +1,19 @@
+@baseUrl = localhost:3300
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJDdHhNeFRXRURFM3I3RjhTNFlmMkoiLCJyb2xlcyI6WyJ1c2VyIiwiYWRtaW4iXSwiaWF0IjoxNzEzODIwODYyLCJleHAiOjE3MTM5MDcyNjJ9.2vgL76f1cAyPu8ql4kmeVWyoLMKpaswtZlfA1M4Amfs
+
+
+POST http://{{baseUrl}}/auth/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "admin@localhost",
+    "password": "newage"
+}
+
+###
+GET http://{{baseUrl}}/pointers/ HTTP/1.1
+Authorization: Bearer {{token}}
+
+###
+GET http://{{baseUrl}}/pointers/count HTTP/1.1
+Authorization: Bearer {{token}}

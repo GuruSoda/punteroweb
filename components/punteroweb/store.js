@@ -147,10 +147,21 @@ function listPointers (userid, count, page) {
     }
 }
 
-function countPointers (dataFile) {
+function countPointers (userid) {
     try {
-        const stmtCountPointers = Model.prepare('select count(id) as total from puntero')
-        const salida = stmtCountPointers.get()
+        const stmtCountPointers = Model.prepare('select count(id) as total from puntero where userid=?')
+        const salida = stmtCountPointers.get(userid)
+        if (salida) return salida.total
+        else return -1
+    } catch (e) {
+        throw error(e.message, e.code)
+    }
+}
+
+function countLabels (userid) {
+    try {
+        const stmtCountLabels = Model.prepare('select count(id) as total from label where userid=?')
+        const salida = stmtCountLabels.get(userid)
         if (salida) return salida.total
         else return -1
     } catch (e) {
@@ -197,6 +208,7 @@ module.exports = {
     delete: deletePointer,
     list: listPointers,
     count: countPointers,
+    countLabels,
     modify: modifyPointer,
     listLabels,
     getPointerByURL,
