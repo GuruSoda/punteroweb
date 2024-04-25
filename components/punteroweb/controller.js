@@ -148,11 +148,11 @@ function listLabels(userid) {
     })
 }
 
-function getPointerByURL (url) {
+function getPointerByURL (url, userid) {
     return new Promise((resolve, reject) => {
         if (!url) return reject({message: 'Invalid parameters (url cannot be empty)'})
         try {
-            resolve(store.getPointerByURL(url))
+            resolve(store.getPointerByURL(url, userid))
         } catch (e) {
             reject(e)
         }

@@ -166,8 +166,15 @@ function getTokens(token) {
 
 function dump() {
     return new Promise((resolve, reject) => {
-        store.dump()
-        resolve()
+        try {
+            store.dump()
+            resolve('dumped!')
+        } catch (e) {
+            reject({
+                message: 'Cannot dump',
+                details: e
+            })
+        }
     })    
 }
 

@@ -41,15 +41,16 @@ router.get('/title', checkAuth('logged'), function(req, res, next) {
         .catch(next)
 });
 
-router.get('/pointer', function(req, res, next) {
-    controller.getPointerByURL(req.query.url)
+router.get('/pointer', checkAuth('logged'), function(req, res, next) {
+    const userid = req.headers.tokenDecoded.sub
+    controller.getPointerByURL(req.query.url, userid)
         .then((message) => {
             response.success(req, res, message, 200)
         })
         .catch(next)
 });
 
-router.get('/dump', checkAuth('admin'), function(req, res, next) {
+router.get('/dump', function(req, res, next) {
     controller.dump()
         .then((message) => {
             response.success(req, res, message, 200)

@@ -4,7 +4,7 @@ const error = require('../../utils/error')
 const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars, userid) values(?, ?, ?, ?, ?, ?)')
 const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=? and userid=?')
 const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where id = ? and userid=?')
-const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ?')
+const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ? and userid=?')
 const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where userid=?')
 const stmtLabels = Model.prepare('select l.label from puntero p,label l, punterolabel pl where p.id = pl.id_puntero and l.id = pl.id_label and p.id = ?')
 const stmtDeletePunteroLabel = Model.prepare('delete from punterolabel where id_puntero = ?')
@@ -84,9 +84,13 @@ function infoPointer(id, userid) {
     }
 }
 
-function getPointerByURL(url) {
+function getPointerByURL(url, userid) {
     try {
-        let pointer = stmtGetPointerByURL.get(url)
+        let pointer = stmtGetPointerByURL.get(url, userid)
+
+        if (!pointer) return undefined
+        
+        pointer.labels = labels(pointer.id)
         return pointer
     } catch (e) {
         throw error(e.message, e.code)
