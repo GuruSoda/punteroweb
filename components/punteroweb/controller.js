@@ -158,7 +158,11 @@ function getPointerByURL (url, userid) {
             if (infoURL) resolve(infoURL)
             else reject({message: 'URL Not Found', status: 404})
         } catch (e) {
-            reject(e)
+            reject({
+                message: 'Error informando URL',
+                details: e
+            })
+
         }
     })
 }

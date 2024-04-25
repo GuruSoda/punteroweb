@@ -19,7 +19,7 @@ function checkAuth(action) {
                 break;
             case 'logged':
                 if (!req.headers['tokenDecoded']) {
-                    next({message: 'not authorized', code: 401, details: {message:'No tiene el header authorization o tokenDecoded', code: 401}})
+                    next({message: 'not authorized', status: 401, details: {message:'No tiene el header authorization o tokenDecoded', code: 401}})
                     break
                 }
                 next()
