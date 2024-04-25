@@ -180,8 +180,15 @@ function dump() {
 
 function deleteAllTokens() {
     return new Promise((resolve, reject) => {
-        store.deleteAllTokens()
-        resolve('All Tokens Deleted')
+        try {
+            store.deleteAllTokens()
+            resolve('All Tokens Deleted')
+        } catch (e) {
+            reject({
+                message: 'Cannot delete tokens',
+                details: e
+            })            
+        }
     })
 }
 

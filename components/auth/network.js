@@ -59,8 +59,8 @@ router.get('/dump', async function (req, res, next) {
 
 router.delete('/deletealltokens', checkAuth('admin'), async function (req, res, next) {
     try {
-        await controller.deleteAllTokens()
-        response.success(req, res, 'Todo Bien!', 201)
+        const message = await controller.deleteAllTokens()
+        response.success(req, res, message, 201)
     } catch (e) {
         response.error(req, res, message, 401, {code: e.code, message: e.message})
     }

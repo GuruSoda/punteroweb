@@ -54,12 +54,11 @@ function modifyPointer (dataPointer) {
     })
 }
 
-function infoPointer(id) {
+function infoPointer(id, userid) {
     return new Promise((resolve, reject) => {
         try {
             const pointer = store.info(id, userid)
-            if (!pointer) return reject({message: 'Pointer not found', statu: 400})
-            resolve(pointer)
+            return (pointer) ? resolve(pointer) : reject({message: 'Pointer not found', statu: 400})
         } catch (e) {
             reject({
                 message: 'Error obteniendo puntero',
@@ -155,7 +154,7 @@ function getPointerByURL (url, userid) {
     return new Promise((resolve, reject) => {
         if (!url) return reject({message: 'Invalid parameters (url cannot be empty)', status: 400})
         try {
-            const infoURL = store.getPointerByURL(url)
+            const infoURL = store.getPointerByURL(url, userid)
             if (infoURL) resolve(infoURL)
             else reject({message: 'URL Not Found', status: 404})
         } catch (e) {

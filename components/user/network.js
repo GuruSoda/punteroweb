@@ -4,7 +4,7 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
 
-router.get('/dump', checkAuth('admin'), function(req, res) {
+router.get('/dump', function(req, res, next) {
     controller.dump()
         .then((message) => {
             response.success(req, res, message, 200)

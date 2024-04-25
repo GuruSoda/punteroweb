@@ -67,8 +67,15 @@ function deleteUser(userid) {
 
 function dump() {
     return new Promise((resolve, reject) => {
-        store.dump()
-        resolve()
+        try {
+            store.dump()
+            resolve('Dumped!')
+        } catch (e) {
+            reject({
+                message: 'Error haciendo Dump',
+                details: e
+            })
+        }
     })    
 }
 
