@@ -14,7 +14,7 @@ const routes = require('./network/routes')
 const app = express()
 
 app.use(decodeToken())
-app.use(cors({credentials: true}))
+app.use(cors({credentials: true, origin: '*'}))
 // solo loggea si la variable de entorno NODE_ENV es PRODUCTION
 app.use(logger('dev', { skip: (req, res) => process.env.NODE_ENV === 'PRODUCTION' }))
 app.use(express.json()) // para que pueda recibir "body" con formato json
