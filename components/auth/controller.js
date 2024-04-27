@@ -99,7 +99,7 @@ function refreshToken(dataToken) {
 
             const tokens = store.getTokensByRefreshToken(dataToken.refreshToken)
 
-            if (!tokens) return reject ({message: 'User Not Authorized'})
+            if (!tokens) return reject ({message: 'User Not Authorized', status: 400})
 
             payloadToken = auth.verify(tokens.access)
 

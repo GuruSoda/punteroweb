@@ -36,34 +36,28 @@ router.post('/register', function(req, res, next) {
         .catch(next)
 })
 
-router.post('/refreshtoken', async function (req, res, next) {
+router.post('/refreshtoken', function (req, res, next) {
     dataToken = {}
     dataToken.refreshToken = req.body.refreshToken
 
-    try {
-        let tokens = await controller.refreshtoken(dataToken)
-        response.success(req, res, tokens, 201)
-    } catch (e) {
-        response.error(req, res, e.message, 401, {code: e.details.code, message: e.details.message})
-    }
+    controller.refreshtoken(dataToken)
+        .then((message) => response.success(req, res, tokens, 201))
+        .catch(next)
+
 })
 
-router.get('/dump', async function (req, res, next) {
-    try {
-        const message = await controller.dump()
-        response.success(req, res, message, 201)
-    } catch (e) {
-        response.error(req, res, e.message, 401, {code: e.details.code, message: e.details.message})
-    }
+router.get('/dump', function (req, res, next) {
+
+    controller.dump()
+        .then((message) => response.success(req, res, message, 200))
+        .catch (next)
 })
 
 router.delete('/deletealltokens', checkAuth('admin'), async function (req, res, next) {
-    try {
-        const message = await controller.deleteAllTokens()
-        response.success(req, res, message, 201)
-    } catch (e) {
-        response.error(req, res, message, 401, {code: e.code, message: e.message})
-    }
+
+    controller.deleteAllTokens()
+        .then((message) => response.success(req, res, message, 200))
+        .catch (next)
 })
 
 router.put('/changepassword', checkAuth('logged'), function (req, res, next) {
@@ -75,7 +69,7 @@ router.put('/changepassword', checkAuth('logged'), function (req, res, next) {
     dataUser.userid = req.headers.tokenDecoded.sub
 
     controller.changepassword(dataUser)
-        .then((message) => response.success(req, res, message, 200))
+        .then((message) => response.success(req, res, message, 201))
         .catch(next)
 })
 
