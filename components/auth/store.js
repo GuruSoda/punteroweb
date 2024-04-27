@@ -13,8 +13,8 @@ function setTokens(userid, access_token, refresh_token) {
     try {
         const out = stmtSetTokens.run(access_token, refresh_token, userid)
         return (out.changes > 0) ? true : false
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -22,8 +22,8 @@ function deleteTokens(token) {
     try {
         const out = stmtDeleteTokens.run(token, token)
         return (out.changes > 0) ? true : false
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -31,8 +31,8 @@ function getTokens(token) {
     try {
         const tokens = stmtGetTokens.get(token, token)
         return tokens
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -40,8 +40,8 @@ function getTokensByAccessToken(access_token) {
     try {
         const tokens = stmtGetTokensByAccessToken.get(access_token)
         return tokens
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -50,7 +50,7 @@ function getTokensByRefreshToken(refresh_token) {
         const tokens = stmtGetTokensByRefreshToken.get(refresh_token)
         return tokens
     } catch (error) {
-        throw error(error.message, error.code)
+        throw error(e.message, e.code)
     }
 }
 
@@ -58,8 +58,8 @@ function getTokensByUserID(userid) {
     try {
         const tokens = stmtGetTokensByUserID.get(userid)
         return tokens
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
@@ -76,8 +76,8 @@ function deleteAllTokens() {
     try {
         const tokens = stmtDeleteAllTokens.run()
         return tokens.changes
-    } catch (error) {
-        throw error(error.message, error.code)
+    } catch (e) {
+        throw error(e.message, e.code)
     }
 }
 
