@@ -38,30 +38,27 @@ router.post('/register', function(req, res, next) {
 
 router.post('/refreshtoken', function (req, res, next) {
     dataToken = {}
-    dataToken.refreshToken = req.body.refreshToken
+    dataToken.accessToken = req.body.accessToken
+    dataToken.refreshToken = req.body.refreshToken    
 
     controller.refreshtoken(dataToken)
         .then((message) => response.success(req, res, tokens, 201))
         .catch(next)
-
 })
 
 router.get('/dump', function (req, res, next) {
-
     controller.dump()
         .then((message) => response.success(req, res, message, 200))
         .catch (next)
 })
 
 router.delete('/deletealltokens', checkAuth('admin'), async function (req, res, next) {
-
     controller.deleteAllTokens()
         .then((message) => response.success(req, res, message, 200))
         .catch (next)
 })
 
 router.put('/changepassword', checkAuth('logged'), function (req, res, next) {
-
     dataUser = {}
 
     dataUser.oldpassword = req.body.oldpassword
