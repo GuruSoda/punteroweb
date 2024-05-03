@@ -4,10 +4,9 @@ const controller = require('./controller')
 const response = require('../../network/response')
 const { checkAuth } = require('../../network/security')
 
-router.post('/', function(req, res, next) {
+router.post('/', checkAuth('logged'), function(req, res, next) {
     const dataTracking = {
-//        userid: req.headers.tokenDecoded.sub || 'NvaAurS59bYDIIWDx1pS7',
-        userid: 'NvaAurS59bYDIIWDx1pS7',
+        userid: req.headers.tokenDecoded.sub,
         url: req.body.url,
         title: req.body.title,
     }
@@ -19,9 +18,8 @@ router.post('/', function(req, res, next) {
         .catch(next)
 })
 
-router.get('/', function(req, res, next) {
-
-    const userid = 'NvaAurS59bYDIIWDx1pS7'
+router.get('/', checkAuth('logged'), function(req, res, next) {
+    const userid = req.headers.tokenDecoded.sub
     controller.get(userid)
         .then((message) => {
             response.success(req, res, message, 201)
