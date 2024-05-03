@@ -1,7 +1,7 @@
 const config = require('../config')
 const db = require('../db')
 
-db.conectar(config.database.filedb)
+db.conectar(config.database.pointerdb)
 
 const user = require('../components/auth/controller')
 const pointer = require('../components/punteroweb/controller')

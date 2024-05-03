@@ -5,7 +5,7 @@ const cors = require('cors')
 const db = require('./db')
 const errors = require('./network/errors')
 
-db.conectar(config.database.filedb)
+db.conectar(config.database.pointerdb)
 
 const { decodeToken } = require('./network/security')
 
