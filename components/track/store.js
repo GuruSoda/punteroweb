@@ -2,7 +2,7 @@ const model = require('./model')
 const error = require('../../utils/error')
 
 const stmtAdd = model.prepare('insert into track(url, title, userid) values(?, ?, ?)')
-const stmtGet = model.prepare('select url, title, added from track where userid=?')
+const stmtAll = model.prepare('select url, title, added from track where userid=?')
 
 function addTracking (dataTrack) {
     try {
@@ -16,7 +16,7 @@ function addTracking (dataTrack) {
 
 function getTracking (userid) {
     try {
-        const out = stmtGet.run(userid)
+        const out = stmtAll.all(userid)
 
         return out
     } catch(e) {
