@@ -33,7 +33,7 @@ function login(dataLogin) {
                 delete dataUser.password
                 dataUser = userStore.getUser(dataUser.userid)
                 dataUser.accessToken = auth.sign({sub: dataUser.userid, roles: dataUser.roles})
-                dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid})
+                dataUser.refreshToken = auth.signRefreshToken({sub: dataUser.userid, roles: dataUser.roles})
 
                 store.setTokens(dataUser.userid, dataUser.accessToken, dataUser.refreshToken)
             
@@ -101,7 +101,7 @@ function refreshToken(dataToken) {
 
             if (!tokens) return reject ({message: 'User Not Authorized', status: 400})
 
-            payloadToken = auth.verify(tokens.access)
+            payloadToken = auth.verify(tokens.refresh)
 
             store.deleteTokens(dataToken.refreshToken)
 

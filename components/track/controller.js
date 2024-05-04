@@ -21,11 +21,11 @@ function add(dataTracking) {
     })
 }
 
-function get(userid) {
+function get(conf) {
     return new Promise((resolve, reject) => {
 
         try {
-            const records = store.get(userid)
+            const records = store.get(conf.userid)
             resolve(records)
         } catch (e) {
             reject({

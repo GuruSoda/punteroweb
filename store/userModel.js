@@ -28,6 +28,15 @@ CREATE TABLE if not exists user_role (\
     FOREIGN KEY (roleid) REFERENCES role (id) on delete cascade ON UPDATE NO ACTION\
 );";
 
+/*
+CREATE TABLE if not exists config (\
+    excludeLabel text,\
+    enableExcludeLabel boolean,\
+    unique(userid, roleid),\
+    FOREIGN KEY (userid) REFERENCES user (userid) on delete cascade ON UPDATE NO ACTION\
+);
+*/
+
 db.exec(puntero)
 
 module.exports = db

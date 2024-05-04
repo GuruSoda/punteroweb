@@ -14,9 +14,9 @@ function addTracking (dataTrack) {
     }
 }
 
-function getTracking (userid) {
+function getTracking (conf) {
     try {
-        const out = stmtAll.all(userid)
+        const out = stmtAll.all(conf.userid)
 
         return out
     } catch(e) {

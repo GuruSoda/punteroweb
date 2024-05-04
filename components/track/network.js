@@ -19,8 +19,10 @@ router.post('/', checkAuth('logged'), function(req, res, next) {
 })
 
 router.get('/', checkAuth('logged'), function(req, res, next) {
-    const userid = req.headers.tokenDecoded.sub
-    controller.get(userid)
+    let conf = {}
+    conf.userid = req.headers.tokenDecoded.sub
+
+    controller.get(conf)
         .then((message) => {
             response.success(req, res, message, 200)
         })
