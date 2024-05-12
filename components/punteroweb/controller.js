@@ -179,7 +179,55 @@ function dump() {
             })
         }
 
-    })    
+    })
+}
+
+function exportPointers (userid) {
+    return new Promise((resolve, reject) => {
+        try {
+            resolve(store.exportPointers(userid))
+        } catch (e) {
+            reject({
+                message: 'Error haciendo export',
+                details: e
+            })
+        }
+    })
+}
+
+function importPointers (userid, pointers) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const noImport = []
+            for (let pointer of pointers) {
+                try {
+                    await addPointer(pointer)
+                } catch (e) {
+                    noImport.push(pointer)
+                }
+            }
+
+            return noImport
+        } catch (e) {
+            reject({
+                message: 'Error import export',
+                details: e
+            })
+        }
+    })
+}
+
+function deleteAll (userid) {
+    return new Promise((resolve, reject) => {
+        try {
+            resolve(store.deleteAll(userid))
+        } catch (e) {
+            reject({
+                message: 'Error haciendo export',
+                details: e
+            })
+        }
+    })
 }
 
 module.exports = {
@@ -192,5 +240,8 @@ module.exports = {
     gettitle: titleURL,
     listLabels,
     getPointerByURL,
-    dump
+    dump,
+    exportPointers,
+    importPointers,
+    deleteAll
 }

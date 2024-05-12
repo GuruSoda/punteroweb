@@ -59,6 +59,36 @@ router.get('/dump', function(req, res, next) {
         .catch(next)
 });
 
+router.get('/export', checkAuth('logged'), function(req, res, next) {
+    const userid = req.headers.tokenDecoded.sub
+    controller.exportPointers(userid)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(next)
+});
+
+router.post('/import', checkAuth('logged'), function(req, res, next) {
+    const userid = req.headers.tokenDecoded.sub
+    const pointers =  req.body
+
+    controller.importPointers(userid, pointers)
+        .then((message) => {
+            response.success(req, res, message, 201)
+        })
+        .catch(next)
+});
+
+router.get('/deleteall', checkAuth('logged'), function(req, res, next) {
+    const userid = req.headers.tokenDecoded.sub
+    controller.deleteAll(userid)
+        .then((message) => {
+            response.success(req, res, message, 200)
+        })
+        .catch(next)
+});
+
+
 router.post('/', checkAuth('logged'), function(req, res, next) {
 
     const dataPuntero = {

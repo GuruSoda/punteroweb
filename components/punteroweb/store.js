@@ -1,8 +1,10 @@
 const Model = require('./model')
+const cacheLabels = require('./cacheLabels')
 const error = require('../../utils/error')
 
 const stmtAdd = Model.prepare('insert into puntero(id, url, title, description, stars, userid) values(?, ?, ?, ?, ?, ?)')
 const stmtUpdate = Model.prepare('update puntero set url=?, title=?, description=?, stars=?, directory=? where id=? and userid=?')
+const stmtGetAllPointers = Model.prepare('select id, url, title, description, stars, directory from puntero where userid=?')
 const stmtInfo = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where id = ? and userid=?')
 const stmtGetPointerByURL = Model.prepare('select id, url, title, description, added, stars, userid from puntero where url = ? and userid=?')
 const stmtList = Model.prepare('select id, url, title, description, added, stars, directory, userid from puntero where userid=?')
@@ -12,6 +14,25 @@ const stmtIDLabel = Model.prepare('select id from label where label = ?')
 const stmtAddLabel = Model.prepare('insert or ignore INTO label (label, userid) values (?, ?)')
 const stmtAddPunteroLabel = Model.prepare('insert INTO punterolabel (id_puntero, id_label) values (?, ?)')
 const stmtDelete = Model.prepare('delete from puntero where id=? and userid=?')
+const stmtDeleteAllPointers = Model.prepare('delete from puntero where userid=?')
+const stmtDeleteAllLabels = Model.prepare('delete from label where userid=?')
+
+loadCacheLabels()
+cacheLabels.dumpCacheLabel()
+
+function loadCacheLabels() {
+
+    const stmtTableLabel = Model.prepare('select pl.id_puntero, l.label from punterolabel pl, label l where pl.id_label = l.id')
+
+    try {
+        let iterator = stmtTableLabel.iterate()
+
+        for (const label of iterator) {
+            cacheLabels.add(label)
+        }
+    } catch(e) {
+    }
+}
 
 function labels(id) {
     try {
@@ -77,7 +98,10 @@ function infoPointer(id, userid) {
 
         if (!registro) return undefined
         
-        registro.labels = labels(id)
+        const labelsPointer = cacheLabels.get(id)
+
+        pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
+
         return registro
     } catch(e) {
         throw error(error.message, e.code)
@@ -89,8 +113,10 @@ function getPointerByURL(url, userid) {
         let pointer = stmtGetPointerByURL.get(url, userid)
 
         if (!pointer) return undefined
-        
-        pointer.labels = labels(pointer.id)
+
+        const labelsPointer = cacheLabels.get(id)
+
+        pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
         return pointer
     } catch (e) {
         throw error(e.message, e.code)
@@ -136,8 +162,12 @@ function listPointers (userid, count, page) {
         let punteros = []
 
         for (let pointer of salida) {
-            pointer.labels = labels(pointer.id)
+            const labelsPointer = cacheLabels.get(id)
+
+            pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
+
             delete pointer.userid
+
             punteros.push(pointer)
         }
 
@@ -202,6 +232,38 @@ function dump() {
     console.table(out)
 }
 
+function exportPointers(userid) {
+
+    try {
+        let iterator = stmtGetAllPointers.iterate(userid)
+
+        let pointers = []
+
+        for (const puntero of iterator) {
+            const labelsPointer = cacheLabels.get(puntero.id)
+
+            puntero.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
+
+            delete puntero.id
+
+            pointers.push(puntero)
+        }
+
+        return pointers
+    } catch(e) {
+        throw error(e.message, e.code)
+    }
+}
+
+function deleteAll(userid) {
+    try {
+        stmtDeleteAllPointers.run(userid)
+        stmtDeleteAllLabels.run(userid)
+    } catch(e) {
+        throw error(e.message, e.code)
+    }
+}
+
 module.exports = {
     add: addPointer,
     info: infoPointer,
@@ -213,5 +275,7 @@ module.exports = {
     listLabels,
     getPointerByURL,
     labels,
-    dump
+    dump,
+    exportPointers,
+    deleteAll,
 }
