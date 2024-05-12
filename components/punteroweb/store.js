@@ -94,11 +94,11 @@ function addPointer (dataPuntero) {
 
 function infoPointer(id, userid) {
     try {
-        let registro = stmtInfo.get(id, userid)
+        let pointer = stmtInfo.get(id, userid)
 
-        if (!registro) return undefined
+        if (!pointer) return undefined
         
-        const labelsPointer = cacheLabels.get(id)
+        const labelsPointer = cacheLabels.get(pointer.id)
 
         pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
 
@@ -114,7 +114,7 @@ function getPointerByURL(url, userid) {
 
         if (!pointer) return undefined
 
-        const labelsPointer = cacheLabels.get(id)
+        const labelsPointer = cacheLabels.get(pointer.id)
 
         pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
         return pointer
@@ -162,7 +162,7 @@ function listPointers (userid, count, page) {
         let punteros = []
 
         for (let pointer of salida) {
-            const labelsPointer = cacheLabels.get(id)
+            const labelsPointer = cacheLabels.get(pointer.id)
 
             pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
 
@@ -239,14 +239,14 @@ function exportPointers(userid) {
 
         let pointers = []
 
-        for (const puntero of iterator) {
-            const labelsPointer = cacheLabels.get(puntero.id)
+        for (const pointer of iterator) {
+            const labelsPointer = cacheLabels.get(pointer.id)
 
-            puntero.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
+            pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)
 
-            delete puntero.id
+            delete pointer.id
 
-            pointers.push(puntero)
+            pointers.push(pointer)
         }
 
         return pointers
