@@ -22,13 +22,25 @@ cacheLabels.dumpCacheLabel()
 
 function loadCacheLabels() {
 
-    const stmtTableLabel = Model.prepare('select pl.id_puntero, l.label from punterolabel pl, label l where pl.id_label = l.id')
+    const stmtTableLabel = Model.prepare('select pl.id_puntero, l.label from punterolabel pl, label l where pl.id_label = l.id order by pl.id_puntero')
 
     try {
         let iterator = stmtTableLabel.iterate()
 
+        let id_puntero = ''
+        let array_labels = []
+
         for (const label of iterator) {
-            cacheLabels.add(label)
+            if (id_puntero !== label.id_puntero) {
+                if (array_labels.length) cacheLabels.add({pointerid: id_puntero, labels: array_labels})
+
+                array_labels = []
+
+                array_labels.push(label.label)
+                id_puntero = label.id_puntero
+            } else {
+                array_labels.push(label.label)
+            }
         }
     } catch(e) {
     }
@@ -84,6 +96,8 @@ function addPointer (dataPuntero) {
         for (let label of dataPuntero.labels) {
             let id_label = stmtIDLabel.get(label)
             stmtAddPunteroLabel.run(dataPuntero.id, id_label.id)
+
+//            cacheLabels.add({id_puntero: dataPuntero.id, label: label})
         }
 
         if (salidaadd.changes > 0) return dataPuntero
@@ -157,11 +171,11 @@ function modifyPointer(dataPointer) {
 // SELECT * FROM tablaUsuarios LIMIT 5 OFFSET 3;
 function listPointers (userid, count, page) {
     try {
-        const salida = stmtList.all(userid)
+        let iterator = stmtList.iterate(userid)
 
         let punteros = []
 
-        for (let pointer of salida) {
+        for (let pointer of iterator) {
             const labelsPointer = cacheLabels.get(pointer.id)
 
             pointer.labels = labelsPointer.length ? labelsPointer : labels(pointer.id)

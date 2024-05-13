@@ -1,20 +1,14 @@
-let cacheLabel = []
-
-function add (label) {
-    cacheLabel.push(label)
+const cacheLabel = new Map();
+// {pointerid: 'xxxxx', {labels: ["a", "b", "c"]}}
+function add (dataLabel) {
+    cacheLabel.set(dataLabel.pointerid, dataLabel.labels);
 }
 
 function get (pointerid) {
 
-    const labelPointer = cacheLabel.filter((item) => item.id_puntero === pointerid)
+    const labels = cacheLabel.get(pointerid)
 
-    if (labelPointer.length === 0) return []
-    
-    let labels = []
-
-    labelPointer.forEach((item) => {labels.push(item.label)})
-
-    return labels
+    return labels ? labels : []
 }
 
 function dumpCacheLabel() {

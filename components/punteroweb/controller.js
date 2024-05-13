@@ -162,7 +162,6 @@ function getPointerByURL (url, userid) {
                 message: 'Error informando URL',
                 details: e
             })
-
         }
     })
 }
@@ -178,7 +177,6 @@ function dump() {
                 details: e
             })
         }
-
     })
 }
 
@@ -201,13 +199,14 @@ function importPointers (userid, pointers) {
             const noImport = []
             for (let pointer of pointers) {
                 try {
+                    pointer.userid = userid
                     await addPointer(pointer)
                 } catch (e) {
                     noImport.push(pointer)
                 }
             }
 
-            return noImport
+            resolve(noImport)
         } catch (e) {
             reject({
                 message: 'Error import export',

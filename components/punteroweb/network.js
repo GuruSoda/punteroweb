@@ -79,7 +79,7 @@ router.post('/import', checkAuth('logged'), function(req, res, next) {
         .catch(next)
 });
 
-router.get('/deleteall', checkAuth('logged'), function(req, res, next) {
+router.delete('/deleteall', checkAuth('logged'), function(req, res, next) {
     const userid = req.headers.tokenDecoded.sub
     controller.deleteAll(userid)
         .then((message) => {
