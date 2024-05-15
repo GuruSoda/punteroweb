@@ -1,4 +1,6 @@
 const model = require('./model')
+const cacheTokens = require('./cacheTokens')
+const config = require('../../config')
 const error = require('../../utils/error')
 
 const stmtSetTokens = model.prepare('insert into tokens (access, refresh, userid) values(?,?,?)')
@@ -9,9 +11,28 @@ const stmtGetTokensByUserID = model.prepare('select access, refresh, userid from
 const stmtDeleteTokens = model.prepare('delete from tokens where access=? or refresh=?')
 const stmtDeleteAllTokens = model.prepare('delete from tokens')
 
-function setTokens(userid, access_token, refresh_token) {
+console.log('cache tokens:', config.cache.tokens)
+if (config.cache.tokens) loadCacheTokens()
+
+cacheTokens.dumpCacheTokens()
+
+function loadCacheTokens() {
     try {
-        const out = stmtSetTokens.run(access_token, refresh_token, userid)
+        const stmtGetAllTokens = model.prepare('select access, refresh, userid from tokens')
+        let iterator = stmtGetAllTokens.iterate()
+
+        for (const token of iterator) {
+            cacheTokens.add({ access: token.access, refresh: token.refresh, userid: token.userid})
+        }
+    } catch (e) {
+        throw error(e.message, e.code)
+    }
+}
+
+function setTokens(userid, access, refresh) {
+    try {
+        const out = stmtSetTokens.run(access, refresh, userid)
+        cacheTokens.add({userid: userid, access: access, refresh: refresh})
         return (out.changes > 0) ? true : false
     } catch (e) {
         throw error(e.message, e.code)
@@ -21,33 +42,40 @@ function setTokens(userid, access_token, refresh_token) {
 function deleteTokens(token) {
     try {
         const out = stmtDeleteTokens.run(token, token)
+        cacheTokens.deleteCache(token)
         return (out.changes > 0) ? true : false
     } catch (e) {
         throw error(e.message, e.code)
     }
 }
 
-function getTokens(token) {
+function getTokens(access) {
     try {
-        const tokens = stmtGetTokens.get(token, token)
+        let tokens = cacheTokens.get(access)
+
+        if (!tokens) tokens = stmtGetTokens.get(access, access)
+
         return tokens
     } catch (e) {
         throw error(e.message, e.code)
     }
 }
 
-function getTokensByAccessToken(access_token) {
+function getTokensByAccessToken(access) {
     try {
-        const tokens = stmtGetTokensByAccessToken.get(access_token)
+        let tokens = cacheTokens.get(access)
+
+        if (!tokens) tokens = stmtGetTokensByAccessToken.get(access)
+
         return tokens
     } catch (e) {
         throw error(e.message, e.code)
     }
 }
 
-function getTokensByRefreshToken(refresh_token) {
+function getTokensByRefreshToken(refresh) {
     try {
-        const tokens = stmtGetTokensByRefreshToken.get(refresh_token)
+        const tokens = stmtGetTokensByRefreshToken.get(refresh)
         return tokens
     } catch (error) {
         throw error(e.message, e.code)
@@ -75,6 +103,7 @@ function dump() {
 function deleteAllTokens() {
     try {
         const tokens = stmtDeleteAllTokens.run()
+        cacheTokens.clear()
         return tokens.changes
     } catch (e) {
         throw error(e.message, e.code)

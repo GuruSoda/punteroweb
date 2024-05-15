@@ -22,9 +22,9 @@ cacheLabels.dumpCacheLabel()
 
 function loadCacheLabels() {
 
-    const stmtTableLabel = Model.prepare('select pl.id_puntero, l.label from punterolabel pl, label l where pl.id_label = l.id order by pl.id_puntero')
-
     try {
+        const stmtTableLabel = Model.prepare('select pl.id_puntero, l.label from punterolabel pl, label l where pl.id_label = l.id order by pl.id_puntero')
+
         let iterator = stmtTableLabel.iterate()
 
         let id_puntero = ''
@@ -43,6 +43,7 @@ function loadCacheLabels() {
             }
         }
     } catch(e) {
+        throw error(e.message, e.code)
     }
 }
 

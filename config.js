@@ -11,8 +11,12 @@ const config = {
         ageRefresh: process.env.AGEREFRESHJWT || '30d',
     },
     database: {
-        pointerdb: process.env.POINTERDB  || './database/pointerweb.sqlite',
-        trackingdb: process.env.TRACKDB  || './database/tracking.sqlite',
+        pointerdb: process.env.POINTERDB || './database/pointerweb.sqlite',
+        trackingdb: process.env.TRACKDB || './database/tracking.sqlite',
+    },
+    cache: {
+        labels: process.env.CACHELABELS || true,
+        tokens: process.env.CACHETOKENS || true,
     },
     model: {
         alphabetIDUser: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",

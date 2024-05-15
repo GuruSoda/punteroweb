@@ -43,11 +43,13 @@ function decodeToken () {
         try {
             if (!authorization) return next()
 
-            let tokens = await authController.getTokens(getToken(req))
+            const access = getToken(req)
+
+            let tokens = await authController.getTokens(access)
 
             if (!tokens) return next({message: 'not authorized', status: 401, details: {message:'No existe el token', code: 401}})
 
-            req.headers.tokenDecoded = auth.verify(tokens.access)
+            req.headers.tokenDecoded = auth.verify(access)
 
             next()
         } catch(err) {
