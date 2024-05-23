@@ -107,7 +107,7 @@ function refreshToken(dataToken) {
 
             let newTokens = {}
             newTokens.accessToken = auth.sign({sub: payloadToken.sub, roles: payloadToken.roles})
-            newTokens.refreshToken = auth.signRefreshToken({sub: payloadToken.sub})
+            newTokens.refreshToken = auth.signRefreshToken({sub: payloadToken.sub, roles: payloadToken.roles})
 
             store.setTokens(payloadToken.sub, newTokens.accessToken, newTokens.refreshToken)
 
