@@ -30,5 +30,6 @@ module.exports = {
     add,
     get,
     clear,
+    deleteCache,
     dumpCacheTokens
 }
