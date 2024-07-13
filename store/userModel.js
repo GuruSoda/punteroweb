@@ -30,6 +30,7 @@ CREATE TABLE if not exists user_role (\
 
 /*
 CREATE TABLE if not exists config (\
+    userid text not null,\
     excludeLabel text,\
     enableExcludeLabel boolean,\
     unique(userid, roleid),\

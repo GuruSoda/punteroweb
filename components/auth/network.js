@@ -39,10 +39,10 @@ router.post('/register', function(req, res, next) {
 router.post('/refreshtoken', function (req, res, next) {
     dataToken = {}
     dataToken.accessToken = req.body.accessToken
-    dataToken.refreshToken = req.body.refreshToken    
+    dataToken.refreshToken = req.body.refreshToken
 
     controller.refreshtoken(dataToken)
-        .then((message) => response.success(req, res, tokens, 201))
+        .then((message) => response.success(req, res, dataToken, 201))
         .catch(next)
 })
 
