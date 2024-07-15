@@ -33,7 +33,6 @@ CREATE TABLE if not exists config (\
     userid text not null,\
     excludeLabel text,\
     enableExcludeLabel boolean,\
-    unique(userid, roleid),\
     FOREIGN KEY (userid) REFERENCES user (userid) on delete cascade ON UPDATE NO ACTION\
 );
 */

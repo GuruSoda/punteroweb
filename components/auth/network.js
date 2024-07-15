@@ -42,7 +42,7 @@ router.post('/refreshtoken', function (req, res, next) {
     dataToken.refreshToken = req.body.refreshToken
 
     controller.refreshtoken(dataToken)
-        .then((message) => response.success(req, res, dataToken, 201))
+        .then((message) => response.success(req, res, message, 201))
         .catch(next)
 })
 
